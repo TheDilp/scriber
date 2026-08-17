@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+  --color-primary: var(--color-zinc-900);
+  --color-secondary: var(--color-zinc-600);
+  --color-tertiary: var(--color-zinc-500);
+  --color-accent: var(--color-amber-400);
+  --color-success: var(--color-emerald-600);
+  --color-surface: var(--color-white);
+  --color-layout: var(--color-zinc-50);
+  --color-error: var(--color-rose-600);
+  --color-error-highlight: var(--color-rose-300);
+  --color-info: var(--color-sky-600);
+
+  --radius-control: var(--radius-lg);
+  --radius-surface: var(--radius-lg);
+
+  --shadow-surface: var(--shadow-sm);
+}
