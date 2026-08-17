@@ -1,7 +1,24 @@
 import "prosekit/basic/style.css";
-import "prosekit/basic/typography.css";
-import { defineBasicExtension } from "prosekit/basic";
-import { createEditor } from "prosekit/core";
+import { createEditor, defineBaseCommands, defineBaseKeymap, defineHistory, union } from "prosekit/core";
+import { defineBlockquote } from "prosekit/extensions/blockquote";
+import { defineBold } from "prosekit/extensions/bold";
+import { defineDoc } from "prosekit/extensions/doc";
+import { defineGapCursor } from "prosekit/extensions/gap-cursor";
+import { defineHardBreak } from "prosekit/extensions/hard-break";
+import { defineHeading } from "prosekit/extensions/heading";
+import { defineHorizontalRule } from "prosekit/extensions/horizontal-rule";
+import { defineImage } from "prosekit/extensions/image";
+import { defineItalic } from "prosekit/extensions/italic";
+import { defineLink } from "prosekit/extensions/link";
+import { defineList } from "prosekit/extensions/list";
+import { defineMention } from "prosekit/extensions/mention";
+import { defineModClickPrevention } from "prosekit/extensions/mod-click-prevention";
+import { defineParagraph } from "prosekit/extensions/paragraph";
+import { defineStrike } from "prosekit/extensions/strike";
+import { defineTable } from "prosekit/extensions/table";
+import { defineText } from "prosekit/extensions/text";
+import { defineUnderline } from "prosekit/extensions/underline";
+import { defineVirtualSelection } from "prosekit/extensions/virtual-selection";
 import { ProseKit } from "prosekit/react";
 import { useId, useMemo } from "react";
 import { tv } from "tailwind-variants";
@@ -15,7 +32,7 @@ type Props = {
 const classes = tv({
   slots: {
     editor:
-      "rounded-control bg-surface text-primary w-full border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-2",
+      "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary w-full max-w-full border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-2",
     label: "font-medium",
     wrapper: "flex flex-col gap-0.5",
   },
@@ -59,7 +76,30 @@ export function DocumentEditor({ size, title, variant }: Props) {
   const { editor, label, wrapper } = classes({ size, variant });
 
   const editorInstance = useMemo(() => {
-    const extension = defineBasicExtension();
+    const extension = union(
+      defineDoc(),
+      defineText(),
+      defineParagraph(),
+      defineHeading(),
+      defineList(),
+      defineBlockquote(),
+      defineImage(),
+      defineHorizontalRule(),
+      defineHardBreak(),
+      defineTable(),
+      defineItalic(),
+      defineBold(),
+      defineUnderline(),
+      defineStrike(),
+      defineLink(),
+      defineBaseKeymap(),
+      defineBaseCommands(),
+      defineHistory(),
+      defineGapCursor(),
+      defineVirtualSelection(),
+      defineModClickPrevention(),
+      defineMention()
+    );
 
     return createEditor({ extension });
   }, []);
