@@ -1,0 +1,32 @@
+pre-push:
+  parallel: true
+  commands:
+    typecheck:
+      run: scripts/hooks/type_check.sh
+      glob: "*.{ts,tsx}"
+      only:
+        - ref: dev
+
+    build:
+      run: scripts/hooks/build_check.sh
+
+commit-msg:
+  commands:
+    commit-msg-check:
+      run: bash scripts/hooks/commit_msg.sh {1}
+
+pre-commit:
+  parallel: true
+  commands:
+    no-commit-on-main:
+      run: echo "Do not commit directly to main branch without review!" && exit 1
+      only:
+        - ref: main
+    lint-staged:
+      glob: "*.{ts,tsx,json,md,css}"
+      run: bun eslint --fix {staged_files} && git add {staged_files}
+      stage_fixed: true
+    format-staged:
+      glob: "src/**/*.{ts,tsx,json,md,css}"
+      run: bunx prettier --write {staged_files} && git add {staged_files}
+      stage_fixed: true
