@@ -19,15 +19,24 @@ import { defineTable } from "prosekit/extensions/table";
 import { defineText } from "prosekit/extensions/text";
 import { defineUnderline } from "prosekit/extensions/underline";
 import { defineVirtualSelection } from "prosekit/extensions/virtual-selection";
-import { ProseKit } from "prosekit/react";
-import { useId, useMemo } from "react";
+import { ProseKit, useDocChange } from "prosekit/react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 
 import type { BaseComponentType } from "@/types";
 
+import { getDocument, saveDocument } from "@/utils/api";
+
+import { Badge } from "./Badge";
+
 type Props = {
+  documentId: string;
   title?: string;
 } & BaseComponentType;
+
+type SaveStatus = "error" | "idle" | "saving";
+
+const AUTOSAVE_DELAY_MS = 800;
 
 const classes = tv({
   slots: {
@@ -71,7 +80,7 @@ const classes = tv({
   },
 });
 
-export function DocumentEditor({ size, title, variant }: Props) {
+export function DocumentEditor({ documentId, size, title, variant }: Props) {
   const id = useId();
   const { editor, label, wrapper } = classes({ size, variant });
 
@@ -104,12 +113,67 @@ export function DocumentEditor({ size, title, variant }: Props) {
     return createEditor({ extension });
   }, []);
 
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [status, setStatus] = useState<SaveStatus>("idle");
+  const [isReady, setIsReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    setIsReady(false);
+    setLoadFailed(false);
+
+    async function bootstrap() {
+      try {
+        const doc = await getDocument(documentId);
+
+        if (isCancelled) return;
+
+        if (doc.content) editorInstance.setContent(doc.content as never);
+
+        setIsReady(true);
+      } catch {
+        if (!isCancelled) setLoadFailed(true);
+      }
+    }
+
+    void bootstrap();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [documentId, editorInstance]);
+
+  useDocChange(
+    () => {
+      if (!isReady) return;
+
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      setStatus("saving");
+
+      saveTimeoutRef.current = setTimeout(() => {
+        saveDocument(documentId, { content: editorInstance.getDocJSON() })
+          .then(() => setStatus("idle"))
+          .catch(() => setStatus("error"));
+      }, AUTOSAVE_DELAY_MS);
+    },
+    { editor: editorInstance }
+  );
+
   return (
     <div className={wrapper()}>
-      {title ? (
-        <label className={label()} htmlFor={id}>
-          {title}
-        </label>
+      {title || loadFailed || status !== "idle" ? (
+        <div className="flex items-center justify-between gap-2">
+          {title ? (
+            <label className={label()} htmlFor={id}>
+              {title}
+            </label>
+          ) : null}
+          {loadFailed ? <Badge size="xs" title="Failed to load" variant="error" /> : null}
+          {!loadFailed && status === "saving" ? <Badge size="xs" title="Saving…" variant="secondary" /> : null}
+          {!loadFailed && status === "error" ? <Badge size="xs" title="Save failed" variant="error" /> : null}
+        </div>
       ) : null}
       <ProseKit editor={editorInstance}>
         <div ref={editorInstance.mount} className={editor()} id={id} />
