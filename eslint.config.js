@@ -17,7 +17,7 @@ import unicorn from "eslint-plugin-unicorn";
 import eslintJson from "@eslint/json";
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', '.vscode', '.claude', '.agents', 'docs', 'scripts', '.localstorage.*']),
+  globalIgnores(['dist', 'node_modules', '.vscode', '.claude', '.agents', 'docs', 'scripts', 'test-results', '.localstorage.*']),
    {
       files: ["**/*.{ts,tsx}"],
       extends: [
