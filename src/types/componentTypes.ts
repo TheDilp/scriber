@@ -1,4 +1,4 @@
-export type Variant = "primary" | "secondary" | "tertiary" | "success" | "error";
+export type Variant = "error" | "info" | "primary" | "secondary" | "success" | "tertiary";
 
 export type Size = "xs" | "sm" | "md" | "lg" | "xl";
 

@@ -26,6 +26,7 @@ const classes = tv({
     },
     variant: {
       error: "bg-error hover:bg-error/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
+      info: "bg-info hover:bg-info/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
       primary: "bg-primary hover:bg-primary/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
       secondary: "bg-surface text-primary ring-secondary/15 hover:bg-layout hover:ring-secondary/30 shadow-sm ring-1",
       success: "bg-success hover:bg-success/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
