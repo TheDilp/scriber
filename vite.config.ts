@@ -9,6 +9,12 @@ export default defineConfig({
     strictPort: true,
     port: 5173,
   },
+  resolve: {
+    alias: {
+      "@components": "./src/components",
+      "@utils": "./src/utils",
+    },
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
