@@ -37,7 +37,7 @@ type Props = {
   title: string;
 } & BaseComponentType;
 
-type SaveStatus = "error" | "idle" | "saving";
+type SaveStatus = "error" | "idle" | "saved" | "saving";
 
 const AUTOSAVE_DELAY_MS = 800;
 
@@ -126,7 +126,7 @@ export function DocumentEditor({ documentId, initialContent, size, title: docume
 
       saveTimeoutRef.current = setTimeout(() => {
         saveDocument(documentId, { content: editorInstance.getDocJSON() })
-          .then(() => setStatus("idle"))
+          .then(() => setStatus("saved"))
           .catch(() => setStatus("error"));
       }, AUTOSAVE_DELAY_MS);
     },
@@ -138,8 +138,9 @@ export function DocumentEditor({ documentId, initialContent, size, title: docume
       {documentTitle || status !== "idle" ? (
         <div className="flex items-center justify-between gap-2">
           {documentTitle ? <h1 className={title()}>{documentTitle}</h1> : null}
-          {status === "saving" ? <Badge size="xs" title="Saving…" variant="secondary" /> : null}
-          {status === "error" ? <Badge size="xs" title="Save failed" variant="error" /> : null}
+          {status === "saved" ? <Badge size="sm" title="Saved" variant="success" /> : null}
+          {status === "saving" ? <Badge size="sm" title="Saving…" variant="info" /> : null}
+          {status === "error" ? <Badge size="sm" title="Save failed" variant="error" /> : null}
         </div>
       ) : null}
       <ProseKit editor={editorInstance}>
