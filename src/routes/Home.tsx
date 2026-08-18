@@ -73,7 +73,6 @@ export function Home() {
                   </span>
                 </Link>
                 <span className="flex h-full w-0 items-center justify-center gap-x-2 transition-[width] group-hover:w-10">
-                  <span className="icon-[ph--pen] w-4 cursor-pointer" />
                   <span className="icon-[ph--trash] text-error w-4 cursor-pointer" />
                 </span>
               </li>
