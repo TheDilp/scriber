@@ -45,16 +45,16 @@ const classes = tv({
   slots: {
     editor:
       "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary w-full max-w-full border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-2",
-    title: "font-display text-3xl font-medium tracking-tight",
+    title: "font-display text-4xl font-medium tracking-tight",
     wrapper: "flex flex-col gap-2",
   },
   variants: {
     size: {
-      lg: { editor: "min-h-40 text-base", title: "text-3xl" },
-      md: { editor: "min-h-32 text-sm", title: "text-2xl" },
-      sm: { editor: "min-h-24 text-sm", title: "text-xl" },
-      xl: { editor: "min-h-48 text-base", title: "text-4xl" },
-      xs: { editor: "min-h-20 text-xs", title: "text-lg" },
+      lg: { editor: "min-h-40 text-base" },
+      md: { editor: "min-h-32 text-sm" },
+      sm: { editor: "min-h-24 text-sm" },
+      xl: { editor: "min-h-48 text-base" },
+      xs: { editor: "min-h-20 text-xs" },
     },
     variant: {
       error: { editor: "border-error/30 focus-within:border-error focus-within:ring-error/20", title: "text-error" },
