@@ -55,7 +55,7 @@ export function Home() {
 
         {documents.length === 0 ? (
           <div className="border-secondary/25 bg-surface rounded-surface flex flex-col items-center gap-2 border border-dashed px-6 py-20 text-center">
-            <p className="font-display text-secondary text-2xl italic">The page is blank.</p>
+            <p className="font-display text-secondary text-2xl italic">There are no documents.</p>
             <p className="text-tertiary max-w-xs text-sm">Start writing and it will show up here.</p>
           </div>
         ) : (
