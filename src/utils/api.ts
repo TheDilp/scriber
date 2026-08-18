@@ -63,12 +63,12 @@ export async function listDocuments(): Promise<DocumentSummary[]> {
   return docs.map(toSummary);
 }
 
-export async function createDocument(title?: string): Promise<Document> {
-  const doc = await request<ApiDocument>("/api/v1/documents", {
+export async function createDocument(title: string): Promise<string> {
+  const docId = await request<string>("/api/v1/documents", {
     body: JSON.stringify({ title }),
     method: "POST",
   });
-  return toDocument(doc);
+  return docId;
 }
 
 export async function getDocument(id: string): Promise<Document> {
