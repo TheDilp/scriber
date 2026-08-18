@@ -48,7 +48,7 @@ pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSumm
 pub async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreateDocument>,
-) -> Result<Json<Document>, AppError> {
+) -> Result<Json<String>, AppError> {
     let id = Uuid::new_v4().to_string();
 
     sqlx::query("INSERT INTO documents (id, title) VALUES (?, ?)")
@@ -57,8 +57,7 @@ pub async fn create(
         .execute(&state.pool)
         .await?;
 
-    let doc = fetch_document(&state, &id).await?;
-    Ok(Json(doc))
+    Ok(Json(id))
 }
 
 pub async fn get(State(state): State<AppState>, Path(id): Path<String>) -> Result<Json<Document>, AppError> {
