@@ -24,6 +24,8 @@
     "@eslint/css": "^1.2.0",
     "@eslint/js": "^10.0.1",
     "@eslint/json": "^2.0.1",
+    "@iconify-json/ph": "^1.2.2",
+    "@iconify/tailwind4": "^1.2.3",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
