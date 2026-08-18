@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import type { DocumentSummary } from "@/utils/api";
 
-import { Button } from "@/components";
+import { Button, Input, Modal } from "@/components";
 import { createDocument, listDocuments } from "@/utils/api";
 
 function formatUpdated(dateString: string) {
@@ -12,8 +12,10 @@ function formatUpdated(dateString: string) {
 
 export function Home() {
   const navigate = useNavigate();
+  const [newTitle, setNewTitle] = useState("");
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isNewPageModalOpen, setIsNewPageModalOpen] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -30,10 +32,11 @@ export function Home() {
   async function handleCreate() {
     setIsCreating(true);
     try {
-      const doc = await createDocument();
-      void navigate({ params: { id: doc.id }, to: "/document/$id" });
+      const docId = await createDocument(newTitle);
+      void navigate({ params: { id: docId }, to: "/document/$id" });
     } finally {
       setIsCreating(false);
+      setNewTitle("");
     }
   }
 
@@ -47,7 +50,7 @@ export function Home() {
             </span>
             <h1 className="font-display text-primary text-4xl leading-none italic">Scriber</h1>
           </div>
-          <Button isDisabled={isCreating} onClick={handleCreate} title="New page" variant="primary" />
+          <Button isDisabled={isCreating} onClick={() => setIsNewPageModalOpen(true)} title="New page" variant="primary" />
         </header>
 
         {documents.length === 0 ? (
@@ -58,22 +61,58 @@ export function Home() {
         ) : (
           <ul className="flex flex-col">
             {documents.map((doc) => (
-              <li key={doc.id} className="group border-secondary/10 border-b last:border-none">
+              <li key={doc.id} className="group border-secondary/10 flex h-12 gap-4 border-b last:border-none">
                 <Link
-                  className="relative flex items-center justify-between gap-4 py-4 pl-4"
+                  className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4"
                   params={{ id: doc.id }}
                   to="/document/$id">
-                  <span className="bg-accent absolute top-1/2 left-0 h-0 w-[3px] -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
+                  <span className="bg-accent absolute top-1/2 left-0 h-0 w-0.75 -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
                   <span className="font-display text-primary truncate text-lg italic">{doc.title || "Untitled"}</span>
                   <span className="text-tertiary shrink-0 font-mono text-[11px] tracking-wide">
                     {formatUpdated(doc.updatedAt)}
                   </span>
                 </Link>
+                <span className="flex h-full w-0 items-center justify-center gap-x-2 transition-[width] group-hover:w-10">
+                  <span className="icon-[ph--pen] w-4 cursor-pointer" />
+                  <span className="icon-[ph--trash] text-error w-4 cursor-pointer" />
+                </span>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      <Modal isOpen={isNewPageModalOpen} onClose={() => setIsNewPageModalOpen(false)} titleId="new-page-title">
+        <div className="flex flex-col gap-7 p-7 sm:p-8">
+          <div className="flex items-start justify-between gap-5">
+            <div className="flex flex-col gap-2">
+              <span className="text-tertiary font-mono text-[10px] tracking-[0.18em]">FRESH SHEET</span>
+              <h2 className="font-display text-primary text-3xl leading-none italic" id="new-page-title">
+                Create a new document.
+              </h2>
+            </div>
+            <button
+              aria-label="Close new page dialog"
+              className="text-tertiary hover:bg-layout hover:text-primary focus-visible:ring-accent/50 -mt-2 -mr-2 grid size-8 place-items-center rounded-full text-xl leading-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              onClick={() => setIsNewPageModalOpen(false)}
+              type="button">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+
+          <Input onChange={(e) => setNewTitle(e.currentTarget.value)} title="Document title" value={newTitle} />
+
+          <div className="border-secondary/10 flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+            <Button onClick={() => setIsNewPageModalOpen(false)} title="Cancel" variant="secondary" />
+            <Button
+              isDisabled={isCreating}
+              onClick={handleCreate}
+              title={isCreating ? "Creating..." : "Create"}
+              variant="info"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
