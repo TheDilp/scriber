@@ -44,7 +44,7 @@ const AUTOSAVE_DELAY_MS = 800;
 const classes = tv({
   slots: {
     editor:
-      "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary w-full max-w-full border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-2",
+      "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary h-[90dvh] max-h-[90dvh] w-full max-w-full overflow-y-auto border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-1",
     title: "font-display text-4xl font-medium tracking-tight",
     wrapper: "flex flex-col gap-2",
   },
@@ -57,10 +57,10 @@ const classes = tv({
       xs: { editor: "min-h-20 text-xs" },
     },
     variant: {
-      error: { editor: "border-error/30 focus-within:border-error focus-within:ring-error/20", title: "text-error" },
-      info: { editor: "border-info/30 focus-within:border-info focus-within:ring-info/20", title: "text-info" },
+      error: { editor: "border-error/30 focus-within:border-error focus-within:ring-error/10", title: "text-error" },
+      info: { editor: "border-info/30 focus-within:border-info focus-within:ring-info/10", title: "text-info" },
       primary: {
-        editor: "border-secondary/20 focus-within:border-primary focus-within:ring-primary/20",
+        editor: "border-secondary/20 focus-within:border-info/40 focus-within:ring-secondary/10",
         title: "text-primary",
       },
       secondary: {
