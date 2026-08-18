@@ -3,3 +3,4 @@ export { Button } from "./Button";
 export { DocumentEditor } from "./DocumentEditor";
 
 export { Input } from "./Input";
+export { Modal } from "./Modal";
