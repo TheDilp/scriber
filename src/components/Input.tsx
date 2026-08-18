@@ -25,7 +25,7 @@ const classes = tv({
   variants: {
     size: {
       lg: { input: "h-10 px-5 text-base", label: "text-xs" },
-      md: { input: "h-9 px-4 text-sm", label: "text-xs" },
+      md: { input: "h-9 px-3 text-sm", label: "text-xs" },
       sm: { input: "h-7 px-3 text-sm", label: "text-[11px]" },
       xl: { input: "h-12 px-6 text-base", label: "text-sm" },
       xs: { input: "h-6 px-2 text-xs", label: "text-[10px]" },
