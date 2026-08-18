@@ -26,7 +26,7 @@ pub struct Document {
 
 #[derive(Deserialize, Default)]
 pub struct CreateDocument {
-    pub title: Option<String>,
+    pub title: String,
 }
 
 #[derive(Deserialize, Default)]
@@ -50,11 +50,10 @@ pub async fn create(
     Json(body): Json<CreateDocument>,
 ) -> Result<Json<Document>, AppError> {
     let id = Uuid::new_v4().to_string();
-    let title = body.title.unwrap_or_else(|| "Untitled".to_string());
 
     sqlx::query("INSERT INTO documents (id, title) VALUES (?, ?)")
         .bind(&id)
-        .bind(&title)
+        .bind(&body.title)
         .execute(&state.pool)
         .await?;
 
