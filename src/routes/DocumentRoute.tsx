@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 import { Badge, Button, DocumentEditor, Drawer } from "@/components";
 import { API } from "@/utils/api";
+import { formatDateStringToDateTime } from "@/utils/datetime";
 import { parseContent } from "@/utils/document";
 import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
@@ -91,14 +92,20 @@ export function DocumentRoute() {
         <nav aria-label="Document versions" className="mt-5">
           <ul className="space-y-2">
             {versions.map((version) => (
-              <li key={version.id}>
+              <li key={version.id} className="border-secondary/40 flex w-full items-center gap-2 rounded-md border p-2 shadow">
+                <span className="flex-1">
+                  Version {version.versionNumber} &nbsp;
+                  <span className="text-sm">({formatDateStringToDateTime(version.createdAt)})</span>
+                </span>
                 <Link
-                  className="text-secondary hover:bg-surface-raised focus-visible:outline-accent hover:text-info block rounded text-lg font-medium transition-colors"
+                  className="text-secondary hover:text-info flex items-center justify-between gap-x-2 text-lg font-medium transition-colors"
                   onClick={() => setIsVersionsDrawerOpen(false)}
                   params={{ id, versionNumber: version.versionNumber.toString() }}
                   to="/document/$id/$versionNumber">
-                  Version {version.versionNumber} ({version.createdAt})
+                  <Button onClick={() => {}} size="sm" title="Open" variant="info" />
                 </Link>
+
+                <Button onClick={() => {}} size="sm" title="Delete" variant="error" />
               </li>
             ))}
           </ul>
