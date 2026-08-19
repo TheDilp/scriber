@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { type Project, projectApi } from "@/api";
@@ -53,13 +54,16 @@ export function Home() {
           <ul className="flex flex-col">
             {projects.map((project) => (
               <li key={project.id} className="group border-secondary/10 flex h-12 gap-4 border-b last:border-none">
-                <div className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4">
+                <Link
+                  className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4"
+                  params={{ projectId: project.id }}
+                  to="/$projectId">
                   <span className="bg-accent absolute top-1/2 left-0 h-0 w-0.75 -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
                   <span className="font-display text-primary truncate text-lg italic">{project.title || "Untitled"}</span>
                   <span className="text-tertiary shrink-0 font-mono text-[11px] tracking-wide">
                     {formatUpdated(project.updatedAt)}
                   </span>
-                </div>
+                </Link>
                 <span className="flex h-full w-0 items-center justify-center gap-x-2 transition-[width] group-hover:w-10">
                   <span className="icon-[ph--trash] text-error w-4 cursor-pointer" />
                 </span>

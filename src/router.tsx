@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 
-import { DocumentRoute, Home } from "@/routes";
+import { DocumentRoute, Home, ProjectRoute } from "@/routes";
 import { documentQueryOptions, documentVersionQueryOptions } from "@/utils/queries";
 
 const queryClient = new QueryClient({});
@@ -32,7 +32,13 @@ const documentRoute = createRoute({
   path: "/document/$id/$versionNumber",
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, documentRoute]);
+const projectRoute = createRoute({
+  component: ProjectRoute,
+  getParentRoute: () => rootRoute,
+  path: "/$projectId",
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, documentRoute, projectRoute]);
 
 export const router = createRouter({ routeTree });
 
