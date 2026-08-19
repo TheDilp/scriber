@@ -22,22 +22,17 @@ import { defineText } from "prosekit/extensions/text";
 import { defineUnderline } from "prosekit/extensions/underline";
 import { defineVirtualSelection } from "prosekit/extensions/virtual-selection";
 import { ProseKit, useDocChange } from "prosekit/react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef } from "react";
 import { tv } from "tailwind-variants";
 
 import type { BaseComponentType } from "@/types";
 
-import { API } from "@/utils/api";
-
-import { Badge } from "./Badge";
-
 type Props = {
   documentId: string;
   initialContent: NodeJSON | undefined;
+  save: (content: NodeJSON) => void;
   versionNumber: string;
 } & BaseComponentType;
-
-type SaveStatus = "error" | "idle" | "saved" | "saving";
 
 const AUTOSAVE_DELAY_MS = 200;
 
@@ -45,8 +40,6 @@ const classes = tv({
   slots: {
     editor:
       "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary h-[90dvh] max-h-[90dvh] w-full max-w-full overflow-y-auto border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-1",
-
-    wrapper: "flex flex-col gap-2",
   },
   variants: {
     size: {
@@ -79,9 +72,9 @@ const classes = tv({
   },
 });
 
-export function DocumentEditor({ documentId, initialContent, size, variant, versionNumber }: Props) {
+export function DocumentEditor({ documentId, initialContent, save, size, variant }: Props) {
   const id = useId();
-  const { editor, wrapper } = classes({ size, variant });
+  const { editor } = classes({ size, variant });
 
   const editorInstance = useMemo(() => {
     const extension = union(
@@ -110,37 +103,24 @@ export function DocumentEditor({ documentId, initialContent, size, variant, vers
     );
 
     return createEditor({ defaultContent: initialContent, extension });
-  }, [documentId, initialContent]);
+  }, [documentId]);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [status, setStatus] = useState<SaveStatus>("idle");
 
   useDocChange(
     () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      setStatus("saving");
 
       saveTimeoutRef.current = setTimeout(() => {
-        API.updateDocumentVersion(documentId, versionNumber, editorInstance.getDocJSON())
-          .then(() => setStatus("saved"))
-          .catch(() => setStatus("error"));
+        save(editorInstance.getDocJSON());
       }, AUTOSAVE_DELAY_MS);
     },
     { editor: editorInstance }
   );
 
   return (
-    <div className={wrapper()}>
-      {status !== "idle" ? (
-        <div className="flex items-center justify-between gap-2">
-          {status === "saved" ? <Badge size="sm" title="Saved" variant="success" /> : null}
-          {status === "saving" ? <Badge size="sm" title="Saving…" variant="info" /> : null}
-          {status === "error" ? <Badge size="sm" title="Save failed" variant="error" /> : null}
-        </div>
-      ) : null}
-      <ProseKit editor={editorInstance}>
-        <div ref={editorInstance.mount} className={editor()} id={id} />
-      </ProseKit>
-    </div>
+    <ProseKit editor={editorInstance}>
+      <div ref={editorInstance.mount} className={editor()} id={id} />
+    </ProseKit>
   );
 }
