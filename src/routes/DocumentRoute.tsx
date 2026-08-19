@@ -40,7 +40,7 @@ export function DocumentRoute() {
   const content = parseContent(documentVersion?.content);
 
   return (
-    <div className="p-4">
+    <div className="flex h-full flex-col p-4">
       <div className="flex items-center gap-4">
         {document?.title ? (
           <div className="mr-auto flex items-center justify-between gap-2">
