@@ -39,7 +39,7 @@ type Props = {
 
 type SaveStatus = "error" | "idle" | "saved" | "saving";
 
-const AUTOSAVE_DELAY_MS = 500;
+const AUTOSAVE_DELAY_MS = 200;
 
 const classes = tv({
   slots: {
