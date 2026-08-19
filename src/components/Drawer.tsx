@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import {
+  autoUpdate,
   FloatingFocusManager,
   FloatingOverlay,
   FloatingPortal,
@@ -24,28 +25,37 @@ export function Drawer({ children, isOpen, onClose, titleId }: DrawerProps) {
       if (!open) onClose();
     },
     open: isOpen,
+    strategy: "absolute",
+    transform: true,
+    whileElementsMounted: autoUpdate,
   });
+  const { styles } = useTransitionStyles(context, {
+    initial: {
+      opacity: 0,
+      transform: "translateX(calc(100vw - var(--container-md)))",
+    },
+    open: {
+      opacity: 1,
+      transform: "translateX(calc(100vw - var(--container-md)))",
+    },
+  });
+
   const dismiss = useDismiss(context, { outsidePressEvent: "mousedown" });
   const role = useRole(context, { role: "dialog" });
   const { getFloatingProps } = useInteractions([dismiss, role]);
-  const { isMounted, styles } = useTransitionStyles(context, {
-    duration: { close: 190, open: 260 },
-    initial: { opacity: 0, transform: "translateX(100%)" },
-  });
-
-  if (!isMounted) return null;
 
   return (
     <FloatingPortal>
-      <FloatingOverlay className="z-50 flex justify-end bg-zinc-950/55 backdrop-blur-[2px]" lockScroll>
+      <FloatingOverlay
+        className={`z-50 flex bg-zinc-950/55 backdrop-blur-[2px] ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        lockScroll>
         <FloatingFocusManager context={context} modal>
           <aside
             ref={refs.setFloating}
+            className="bg-surface right-0 flex h-full max-h-dvh w-md flex-col overflow-hidden border-l border-white/70 shadow-[-24px_0_80px_-24px_rgba(24,24,27,0.48)] transition-transform duration-350 ease-in-out outline-none"
+            style={styles}
             {...getFloatingProps({
               "aria-labelledby": titleId,
-              className:
-                "relative flex h-dvh w-full max-w-md flex-col overflow-hidden border-l border-white/70 bg-surface shadow-[-24px_0_80px_-24px_rgba(24,24,27,0.48)] outline-none",
-              style: styles,
             })}>
             <span aria-hidden="true" className="bg-accent absolute inset-y-0 left-0 w-1" />
             <div className="flex h-full flex-col px-7 py-8 sm:px-10">
