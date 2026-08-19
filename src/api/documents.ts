@@ -27,9 +27,9 @@ async function list(): Promise<DocumentSummary[]> {
   return request<DocumentSummary[]>("/api/v1/documents");
 }
 
-async function create(title: string): Promise<string> {
+async function create({ projectId, title }: { projectId: string; title: string }): Promise<string> {
   return request<string>("/api/v1/documents", {
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ projectId, title }),
     method: "POST",
   });
 }

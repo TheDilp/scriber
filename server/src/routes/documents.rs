@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     Json,
 };
 use serde::{Deserialize, Serialize};
@@ -12,6 +12,7 @@ use crate::{error::AppError, state::AppState};
 #[serde(rename_all = "camelCase")]
 pub struct DocumentSummary {
     pub id: String,
+    pub project_id: String,
     pub title: String,
     pub current_version: i64,
     pub updated_at: String,
@@ -21,6 +22,7 @@ pub struct DocumentSummary {
 #[serde(rename_all = "camelCase")]
 pub struct Document {
     pub id: String,
+    pub project_id: String,
     pub title: String,
     pub current_version: i64,
     pub created_at: String,
@@ -28,19 +30,32 @@ pub struct Document {
 }
 
 #[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateDocument {
     pub title: String,
+    pub project_id: String,
 }
 
 #[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateDocument {
     pub title: Option<String>,
+    pub project_id: Option<String>,
 }
 
-pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSummary>>, AppError> {
+#[derive(Deserialize, Default)]
+pub struct ListDocumentsQuery {
+    pub project_id: Option<String>,
+}
+
+pub async fn list(
+    State(state): State<AppState>,
+    Query(query): Query<ListDocumentsQuery>,
+) -> Result<Json<Vec<DocumentSummary>>, AppError> {
     let docs = sqlx::query_as::<_, DocumentSummary>(
         "SELECT
             d.id,
+            d.project_id,
             d.title,
             COALESCE(
                 (SELECT version_number FROM document_versions
@@ -50,8 +65,11 @@ pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSumm
             ) AS current_version,
             d.updated_at
          FROM documents d
+         WHERE ? IS NULL OR d.project_id = ?
          ORDER BY d.updated_at DESC",
     )
+    .bind(&query.project_id)
+    .bind(&query.project_id)
     .fetch_all(&state.pool)
     .await?;
 
@@ -67,9 +85,10 @@ pub async fn create(
 
     let mut tx = state.pool.begin().await?;
 
-    sqlx::query("INSERT INTO documents (id, title) VALUES (?, ?)")
+    sqlx::query("INSERT INTO documents (id, title, project_id) VALUES (?, ?, ?)")
         .bind(&id)
         .bind(&body.title)
+        .bind(&body.project_id)
         .execute(&mut *tx)
         .await?;
 
@@ -99,10 +118,12 @@ pub async fn update(
     sqlx::query(
         "UPDATE documents SET
             title = COALESCE(?, title),
+            project_id = COALESCE(?, project_id),
             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?",
     )
     .bind(&body.title)
+    .bind(&body.project_id)
     .bind(&id)
     .execute(&state.pool)
     .await?;
@@ -125,6 +146,7 @@ async fn fetch_document(state: &AppState, id: &str) -> Result<Document, AppError
     sqlx::query_as::<_, Document>(
         "SELECT
             d.id,
+            d.project_id,
             d.title,
             COALESCE(
                 (SELECT version_number FROM document_versions
