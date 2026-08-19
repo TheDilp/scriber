@@ -16,10 +16,9 @@ type DrawerProps = {
   children?: ReactNode;
   isOpen: boolean;
   onClose: () => void;
-  titleId?: string;
 };
 
-export function Drawer({ children, isOpen, onClose, titleId }: DrawerProps) {
+export function Drawer({ children, isOpen, onClose }: DrawerProps) {
   const { context, refs } = useFloating({
     onOpenChange: (open) => {
       if (!open) onClose();
@@ -54,9 +53,7 @@ export function Drawer({ children, isOpen, onClose, titleId }: DrawerProps) {
             ref={refs.setFloating}
             className="bg-surface right-0 flex h-full max-h-dvh w-md flex-col overflow-hidden border-l border-white/70 shadow-[-24px_0_80px_-24px_rgba(24,24,27,0.48)] transition-transform duration-350 ease-in-out outline-none"
             style={styles}
-            {...getFloatingProps({
-              "aria-labelledby": titleId,
-            })}>
+            {...getFloatingProps()}>
             <span aria-hidden="true" className="bg-accent absolute inset-y-0 left-0 w-1" />
             <div className="flex h-full flex-col px-7 py-8 sm:px-10">
               {children ?? (

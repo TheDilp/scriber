@@ -62,7 +62,7 @@ export function DocumentRoute() {
         </button>
       </div>
       {document ? <DocumentEditor documentId={id} initialContent={content} save={save} versionNumber={versionNumber} /> : null}
-      <Drawer isOpen={isVersionsDrawerOpen} onClose={() => setIsVersionsDrawerOpen(false)} titleId="document-versions-title">
+      <Drawer isOpen={isVersionsDrawerOpen} onClose={() => setIsVersionsDrawerOpen(false)}>
         <div className="flex items-center justify-between border-b border-white/70 pb-5">
           <h2 className="font-display text-primary text-2xl" id="document-versions-title">
             Versions
