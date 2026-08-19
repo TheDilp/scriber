@@ -10,6 +10,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
       "@components": path.resolve(import.meta.dirname, "./src/components"),
+      "@enums": path.resolve(import.meta.dirname, "./src/enums"),
       "@routes": path.resolve(import.meta.dirname, "./src/routes"),
       "@types": path.resolve(import.meta.dirname, "./src/types"),
       "@utils": path.resolve(import.meta.dirname, "./src/utils"),
