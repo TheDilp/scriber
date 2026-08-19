@@ -49,6 +49,8 @@ export function Home() {
                 <Link
                   className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4"
                   params={{ id: doc.id }}
+                  preload="viewport"
+                  preloadDelay={200}
                   to="/document/$id">
                   <span className="bg-accent absolute top-1/2 left-0 h-0 w-0.75 -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
                   <span className="font-display text-primary truncate text-lg italic">{doc.title || "Untitled"}</span>
