@@ -13,6 +13,7 @@ use crate::{error::AppError, state::AppState};
 pub struct DocumentSummary {
     pub id: String,
     pub title: String,
+    pub current_version: i64,
     pub updated_at: String,
 }
 
@@ -39,7 +40,18 @@ pub struct UpdateDocument {
 
 pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSummary>>, AppError> {
     let docs = sqlx::query_as::<_, DocumentSummary>(
-        "SELECT id, title, updated_at FROM documents ORDER BY updated_at DESC",
+        "SELECT
+            d.id,
+            d.title,
+            COALESCE(
+                (SELECT version_number FROM document_versions
+                 WHERE document_id = d.id
+                 ORDER BY version_number DESC LIMIT 1),
+                0
+            ) AS current_version,
+            d.updated_at
+         FROM documents d
+         ORDER BY d.updated_at DESC",
     )
     .fetch_all(&state.pool)
     .await?;
