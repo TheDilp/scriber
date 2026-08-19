@@ -1,17 +1,34 @@
 import { useQueries } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 
 import { Badge, DocumentEditor, Dropdown } from "@/components";
-import { documentQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
+import { parseContent } from "@/utils/document";
+import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
-const routeApi = getRouteApi("/document/$id");
+const routeApi = getRouteApi("/document/$id/$versionNumber");
 
 export function DocumentRoute() {
-  const { id } = routeApi.useParams();
+  const { id, versionNumber } = routeApi.useParams();
+  const navigate = useNavigate();
 
-  const [{ data: document, isLoadingError }, { data: documentVersions = [] }] = useQueries({
-    queries: [documentQueryOptions(id), documentVersionsQueryOptions(id)],
+  const [
+    { data: document, isLoadingError },
+    { data: documentVersions = [] },
+    { data: documentVersion, isLoading: isLoadingDocumentVersion },
+  ] = useQueries({
+    queries: [
+      documentQueryOptions(id),
+      documentVersionsQueryOptions(id),
+      versionNumber
+        ? documentVersionQueryOptions(id, versionNumber)
+        : { enabled: false, queryFn: () => undefined, queryKey: ["documentVersion", id, versionNumber] },
+    ],
   });
+
+  //TODO: Skeleton component
+  if (isLoadingDocumentVersion) return null;
+
+  const content = parseContent(documentVersion?.content);
 
   return (
     <div className="p-4">
@@ -23,11 +40,16 @@ export function DocumentRoute() {
         ) : null}
         {isLoadingError ? <Badge size="xs" title="Failed to load" variant="error" /> : null}
         <Dropdown
-          options={documentVersions.map((doc) => ({ id: doc.id, onClick: () => {}, title: `Version ${doc.versionNumber}` }))}>
+          options={documentVersions.map((doc) => ({
+            id: doc.id,
+            onClick: () =>
+              navigate({ params: { id, versionNumber: doc.versionNumber.toString() }, to: "/document/$id/$versionNumber" }),
+            title: `Version ${doc.versionNumber}`,
+          }))}>
           <div className="icon-[ph--clock-counter-clockwise] size-8" />
         </Dropdown>
       </div>
-      {document ? <DocumentEditor documentId={id} initialContent={document.content} /> : null}
+      {document ? <DocumentEditor documentId={id} initialContent={content} versionNumber={versionNumber} /> : null}
     </div>
   );
 }

@@ -15,3 +15,10 @@ export function documentVersionsQueryOptions(id: string) {
     queryKey: ["documentVersions", id],
   });
 }
+
+export function documentVersionQueryOptions(documentId: string, versionId: string) {
+  return queryOptions({
+    queryFn: () => API.getDocumentVersion(documentId, versionId),
+    queryKey: ["documentVersion", documentId, versionId],
+  });
+}

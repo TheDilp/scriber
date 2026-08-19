@@ -34,6 +34,7 @@ import { Badge } from "./Badge";
 type Props = {
   documentId: string;
   initialContent: NodeJSON | undefined;
+  versionNumber: string;
 } & BaseComponentType;
 
 type SaveStatus = "error" | "idle" | "saved" | "saving";
@@ -78,7 +79,7 @@ const classes = tv({
   },
 });
 
-export function DocumentEditor({ documentId, initialContent, size, variant }: Props) {
+export function DocumentEditor({ documentId, initialContent, size, variant, versionNumber }: Props) {
   const id = useId();
   const { editor, wrapper } = classes({ size, variant });
 
@@ -120,7 +121,7 @@ export function DocumentEditor({ documentId, initialContent, size, variant }: Pr
       setStatus("saving");
 
       saveTimeoutRef.current = setTimeout(() => {
-        API.saveDocument(documentId, { content: editorInstance.getDocJSON() })
+        API.updateDocumentVersion(documentId, versionNumber, editorInstance.getDocJSON())
           .then(() => setStatus("saved"))
           .catch(() => setStatus("error"));
       }, AUTOSAVE_DELAY_MS);

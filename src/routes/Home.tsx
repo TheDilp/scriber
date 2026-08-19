@@ -20,8 +20,9 @@ export function Home() {
   });
   const { isPending: isCreating, mutate: handleCreate } = useMutation({
     mutationFn: API.createDocument,
-
-    onSuccess: (docId) => navigate({ params: { id: docId }, to: "/document/$id" }),
+    //* On creation there is only the initial version i.e. 1
+    //* therefore we can leave it hardcoded
+    onSuccess: (docId) => navigate({ params: { id: docId, versionNumber: "1" }, to: "/document/$id/$versionNumber" }),
   });
 
   return (
@@ -48,10 +49,10 @@ export function Home() {
               <li key={doc.id} className="group border-secondary/10 flex h-12 gap-4 border-b last:border-none">
                 <Link
                   className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4"
-                  params={{ id: doc.id }}
+                  params={{ id: doc.id, versionNumber: doc?.currentVersion?.toString() }}
                   preload="viewport"
                   preloadDelay={200}
-                  to="/document/$id">
+                  to="/document/$id/$versionNumber">
                   <span className="bg-accent absolute top-1/2 left-0 h-0 w-0.75 -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
                   <span className="font-display text-primary truncate text-lg italic">{doc.title || "Untitled"}</span>
                   <span className="text-tertiary shrink-0 font-mono text-[11px] tracking-wide">
