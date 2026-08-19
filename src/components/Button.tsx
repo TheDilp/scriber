@@ -12,7 +12,7 @@ type Props = {
 } & BaseComponentType;
 
 const classes = tv({
-  base: "rounded-control focus-visible:ring-accent/50 focus-visible:ring-offset-surface inline-flex items-center justify-center font-medium tracking-tight whitespace-nowrap transition-[transform,box-shadow,background-color,border-color] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100",
+  base: "rounded-control focus-visible:ring-accent/50 focus-visible:ring-offset-surface inline-flex cursor-pointer items-center justify-center font-medium tracking-tight whitespace-nowrap transition-[transform,box-shadow,background-color,border-color] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100",
   variants: {
     isFullWidth: {
       true: "w-full",
