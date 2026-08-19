@@ -20,6 +20,7 @@ pub struct Document {
     pub id: String,
     pub title: String,
     pub content: String,
+    pub current_version: i64,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -118,6 +119,12 @@ async fn fetch_document(state: &AppState, id: &str) -> Result<Document, AppError
                  ORDER BY version_number DESC LIMIT 1),
                 ''
             ) AS content,
+            COALESCE(
+                (SELECT version_number FROM document_versions
+                 WHERE document_id = d.id
+                 ORDER BY version_number DESC LIMIT 1),
+                0
+            ) AS current_version,
             d.created_at,
             d.updated_at
          FROM documents d
