@@ -8,11 +8,11 @@ export default defineConfig({
   plugins: [react(), babel({ presets: [reactCompilerPreset()] }), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@components": path.resolve(__dirname, "./src/components"),
-      "@routes": path.resolve(__dirname, "./src/routes"),
-      "@types": path.resolve(__dirname, "./src/types"),
-      "@utils": path.resolve(__dirname, "./src/utils"),
+      "@": path.resolve(import.meta.dirname, "./src"),
+      "@components": path.resolve(import.meta.dirname, "./src/components"),
+      "@routes": path.resolve(import.meta.dirname, "./src/routes"),
+      "@types": path.resolve(import.meta.dirname, "./src/types"),
+      "@utils": path.resolve(import.meta.dirname, "./src/utils"),
     },
   },
   server: {
