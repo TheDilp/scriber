@@ -27,14 +27,13 @@ import { tv } from "tailwind-variants";
 
 import type { BaseComponentType } from "@/types";
 
-import { saveDocument } from "@/utils/api";
+import { API } from "@/utils/api";
 
 import { Badge } from "./Badge";
 
 type Props = {
   documentId: string;
   initialContent: NodeJSON | undefined;
-  title: string;
 } & BaseComponentType;
 
 type SaveStatus = "error" | "idle" | "saved" | "saving";
@@ -45,7 +44,7 @@ const classes = tv({
   slots: {
     editor:
       "rounded-control prose prose-hr:my-1 prose-headings:my-0 prose-p:my-0.5 bg-surface text-primary h-[90dvh] max-h-[90dvh] w-full max-w-full overflow-y-auto border p-2 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-within:ring-1",
-    title: "font-display text-4xl font-medium tracking-tight",
+
     wrapper: "flex flex-col gap-2",
   },
   variants: {
@@ -57,23 +56,19 @@ const classes = tv({
       xs: { editor: "min-h-20 text-xs" },
     },
     variant: {
-      error: { editor: "border-error/30 focus-within:border-error focus-within:ring-error/10", title: "text-error" },
-      info: { editor: "border-info/30 focus-within:border-info focus-within:ring-info/10", title: "text-info" },
+      error: { editor: "border-error/30 focus-within:border-error focus-within:ring-error/10" },
+      info: { editor: "border-info/30 focus-within:border-info focus-within:ring-info/10" },
       primary: {
         editor: "border-secondary/20 focus-within:border-info/40 focus-within:ring-secondary/10",
-        title: "text-primary",
       },
       secondary: {
         editor: "border-secondary/20 focus-within:border-secondary focus-within:ring-secondary/20",
-        title: "text-secondary",
       },
       success: {
         editor: "border-success/30 focus-within:border-success focus-within:ring-success/20",
-        title: "text-success",
       },
       tertiary: {
         editor: "border-secondary/20 focus-within:border-tertiary focus-within:ring-tertiary/20",
-        title: "text-tertiary",
       },
     },
   },
@@ -83,9 +78,9 @@ const classes = tv({
   },
 });
 
-export function DocumentEditor({ documentId, initialContent, size, title: documentTitle, variant }: Props) {
+export function DocumentEditor({ documentId, initialContent, size, variant }: Props) {
   const id = useId();
-  const { editor, title, wrapper } = classes({ size, variant });
+  const { editor, wrapper } = classes({ size, variant });
 
   const editorInstance = useMemo(() => {
     const extension = union(
@@ -125,7 +120,7 @@ export function DocumentEditor({ documentId, initialContent, size, title: docume
       setStatus("saving");
 
       saveTimeoutRef.current = setTimeout(() => {
-        saveDocument(documentId, { content: editorInstance.getDocJSON() })
+        API.saveDocument(documentId, { content: editorInstance.getDocJSON() })
           .then(() => setStatus("saved"))
           .catch(() => setStatus("error"));
       }, AUTOSAVE_DELAY_MS);
@@ -135,9 +130,8 @@ export function DocumentEditor({ documentId, initialContent, size, title: docume
 
   return (
     <div className={wrapper()}>
-      {documentTitle || status !== "idle" ? (
+      {status !== "idle" ? (
         <div className="flex items-center justify-between gap-2">
-          {documentTitle ? <h1 className={title()}>{documentTitle}</h1> : null}
           {status === "saved" ? <Badge size="sm" title="Saved" variant="success" /> : null}
           {status === "saving" ? <Badge size="sm" title="Saving…" variant="info" /> : null}
           {status === "error" ? <Badge size="sm" title="Save failed" variant="error" /> : null}

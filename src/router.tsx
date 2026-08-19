@@ -1,12 +1,17 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 
 import { DocumentRoute, Home } from "@/routes";
 
+const queryClient = new QueryClient({});
+
 const rootRoute = createRootRoute({
   component: () => (
-    <main className="h-svh w-svw overflow-auto">
-      <Outlet />
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <main className="h-svh w-svw">
+        <Outlet />
+      </main>
+    </QueryClientProvider>
   ),
 });
 
