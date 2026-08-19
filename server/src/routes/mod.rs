@@ -1,3 +1,4 @@
+pub mod document_versions;
 pub mod documents;
 pub mod health;
 
@@ -12,5 +13,15 @@ pub fn api_router() -> Router<AppState> {
         .route(
             "/documents/{id}",
             get(documents::get).put(documents::update).delete(documents::delete),
+        )
+        .route(
+            "/documents/{document_id}/versions",
+            get(document_versions::list).post(document_versions::create),
+        )
+        .route(
+            "/documents/{document_id}/versions/{version_id}",
+            get(document_versions::get)
+                .put(document_versions::update)
+                .delete(document_versions::delete),
         )
 }

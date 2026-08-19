@@ -32,7 +32,6 @@ pub struct CreateDocument {
 #[derive(Deserialize, Default)]
 pub struct UpdateDocument {
     pub title: Option<String>,
-    pub content: Option<String>,
 }
 
 pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSummary>>, AppError> {
@@ -50,12 +49,25 @@ pub async fn create(
     Json(body): Json<CreateDocument>,
 ) -> Result<Json<String>, AppError> {
     let id = Uuid::new_v4().to_string();
+    let version_id = Uuid::new_v4().to_string();
+
+    let mut tx = state.pool.begin().await?;
 
     sqlx::query("INSERT INTO documents (id, title) VALUES (?, ?)")
         .bind(&id)
         .bind(&body.title)
-        .execute(&state.pool)
+        .execute(&mut *tx)
         .await?;
+
+    sqlx::query(
+        "INSERT INTO document_versions (id, document_id, version_number, content) VALUES (?, ?, 1, '')",
+    )
+    .bind(&version_id)
+    .bind(&id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
 
     Ok(Json(id))
 }
@@ -73,12 +85,10 @@ pub async fn update(
     sqlx::query(
         "UPDATE documents SET
             title = COALESCE(?, title),
-            content = COALESCE(?, content),
             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?",
     )
     .bind(&body.title)
-    .bind(&body.content)
     .bind(&id)
     .execute(&state.pool)
     .await?;
@@ -99,7 +109,19 @@ pub async fn delete(State(state): State<AppState>, Path(id): Path<String>) -> Re
 
 async fn fetch_document(state: &AppState, id: &str) -> Result<Document, AppError> {
     sqlx::query_as::<_, Document>(
-        "SELECT id, title, content, created_at, updated_at FROM documents WHERE id = ?",
+        "SELECT
+            d.id,
+            d.title,
+            COALESCE(
+                (SELECT content FROM document_versions
+                 WHERE document_id = d.id
+                 ORDER BY version_number DESC LIMIT 1),
+                ''
+            ) AS content,
+            d.created_at,
+            d.updated_at
+         FROM documents d
+         WHERE d.id = ?",
     )
     .bind(id)
     .fetch_optional(&state.pool)
