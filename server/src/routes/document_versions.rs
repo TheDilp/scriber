@@ -47,9 +47,9 @@ pub async fn list(
 
 pub async fn get(
     State(state): State<AppState>,
-    Path((document_id, version_id)): Path<(String, String)>,
+    Path((document_id, version_number)): Path<(String, i64)>,
 ) -> Result<Json<DocumentVersion>, AppError> {
-    let version = fetch_version(&state, &document_id, &version_id).await?;
+    let version = fetch_version(&state, &document_id, version_number).await?;
     Ok(Json(version))
 }
 
@@ -94,20 +94,20 @@ pub async fn create(
 
     tx.commit().await?;
 
-    let version = fetch_version(&state, &document_id, &id).await?;
+    let version = fetch_version_by_id(&state, &document_id, &id).await?;
     Ok(Json(version))
 }
 
 pub async fn update(
     State(state): State<AppState>,
-    Path((document_id, version_id)): Path<(String, String)>,
+    Path((document_id, version_number)): Path<(String, i64)>,
     Json(body): Json<UpdateDocumentVersionContent>,
 ) -> Result<Json<DocumentVersion>, AppError> {
     let result = sqlx::query(
-        "UPDATE document_versions SET content = ? WHERE id = ? AND document_id = ?",
+        "UPDATE document_versions SET content = ? WHERE version_number = ? AND document_id = ?",
     )
     .bind(&body.content)
-    .bind(&version_id)
+    .bind(version_number)
     .bind(&document_id)
     .execute(&state.pool)
     .await?;
@@ -116,16 +116,16 @@ pub async fn update(
         return Err(AppError::NotFound);
     }
 
-    let version = fetch_version(&state, &document_id, &version_id).await?;
+    let version = fetch_version(&state, &document_id, version_number).await?;
     Ok(Json(version))
 }
 
 pub async fn delete(
     State(state): State<AppState>,
-    Path((document_id, version_id)): Path<(String, String)>,
+    Path((document_id, version_number)): Path<(String, i64)>,
 ) -> Result<Json<()>, AppError> {
-    let result = sqlx::query("DELETE FROM document_versions WHERE id = ? AND document_id = ?")
-        .bind(&version_id)
+    let result = sqlx::query("DELETE FROM document_versions WHERE version_number = ? AND document_id = ?")
+        .bind(version_number)
         .bind(&document_id)
         .execute(&state.pool)
         .await?;
@@ -140,14 +140,31 @@ pub async fn delete(
 async fn fetch_version(
     state: &AppState,
     document_id: &str,
-    version_id: &str,
+    version_number: i64,
+) -> Result<DocumentVersion, AppError> {
+    sqlx::query_as::<_, DocumentVersion>(
+        "SELECT id, document_id, version_number, content, created_at
+         FROM document_versions
+         WHERE version_number = ? AND document_id = ?",
+    )
+    .bind(version_number)
+    .bind(document_id)
+    .fetch_optional(&state.pool)
+    .await?
+    .ok_or(AppError::NotFound)
+}
+
+async fn fetch_version_by_id(
+    state: &AppState,
+    document_id: &str,
+    id: &str,
 ) -> Result<DocumentVersion, AppError> {
     sqlx::query_as::<_, DocumentVersion>(
         "SELECT id, document_id, version_number, content, created_at
          FROM document_versions
          WHERE id = ? AND document_id = ?",
     )
-    .bind(version_id)
+    .bind(id)
     .bind(document_id)
     .fetch_optional(&state.pool)
     .await?

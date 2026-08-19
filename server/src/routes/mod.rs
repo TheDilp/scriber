@@ -19,7 +19,7 @@ pub fn api_router() -> Router<AppState> {
             get(document_versions::list).post(document_versions::create),
         )
         .route(
-            "/documents/{document_id}/versions/{version_id}",
+            "/documents/{document_id}/versions/{version_number}",
             get(document_versions::get)
                 .put(document_versions::update)
                 .delete(document_versions::delete),
