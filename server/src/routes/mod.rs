@@ -3,6 +3,7 @@ pub mod document_versions;
 pub mod documents;
 pub mod health;
 pub mod projects;
+pub mod search;
 pub mod tags;
 
 use axum::{
@@ -40,6 +41,8 @@ pub fn api_router() -> Router<AppState> {
             "/projects/{id}",
             get(projects::get).put(projects::update).delete(projects::delete),
         )
+        .route("/search", get(search::search))
+        .route("/projects/{project_id}/search", get(search::search_in_project))
         .route("/projects/{project_id}/tags", get(tags::list))
         .route("/projects/{project_id}/tags/{id}", delete(tags::delete))
 }
