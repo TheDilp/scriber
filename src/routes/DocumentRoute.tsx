@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 
 import { Badge, DocumentEditor, Dropdown } from "@/components";
-import { API } from "@/utils/api";
+import { documentQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
 const routeApi = getRouteApi("/document/$id");
 
@@ -10,16 +10,7 @@ export function DocumentRoute() {
   const { id } = routeApi.useParams();
 
   const [{ data: document, isLoadingError }, { data: documentVersions = [] }] = useQueries({
-    queries: [
-      {
-        queryFn: async () => API.getDocument(id),
-        queryKey: ["documents", id],
-      },
-      {
-        queryFn: async () => API.listDocumentVersions(id),
-        queryKey: ["documentVersions", id],
-      },
-    ],
+    queries: [documentQueryOptions(id), documentVersionsQueryOptions(id)],
   });
 
   return (

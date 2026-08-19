@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 
 import { DocumentRoute, Home } from "@/routes";
+import { documentQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
 const queryClient = new QueryClient({});
 
@@ -24,6 +25,11 @@ const indexRoute = createRoute({
 const documentRoute = createRoute({
   component: DocumentRoute,
   getParentRoute: () => rootRoute,
+  loader: ({ params }) =>
+    Promise.all([
+      queryClient.ensureQueryData(documentQueryOptions(params.id)),
+      queryClient.ensureQueryData(documentVersionsQueryOptions(params.id)),
+    ]),
   path: "/document/$id",
 });
 
