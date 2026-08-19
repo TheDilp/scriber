@@ -2,9 +2,9 @@ import type { NodeJSON } from "prosekit/core";
 
 import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { Badge, DocumentEditor, Drawer } from "@/components";
+import { Badge, Button, DocumentEditor, Drawer } from "@/components";
 import { API } from "@/utils/api";
 import { parseContent } from "@/utils/document";
 import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
@@ -16,13 +16,8 @@ export function DocumentRoute() {
   const [isVersionsDrawerOpen, setIsVersionsDrawerOpen] = useState(false);
   const { data: versions = [] } = useQuery(documentVersionsQueryOptions(id));
 
-  const [{ data: document, isLoadingError }, { data: documentVersion, isLoading: isLoadingDocumentVersion }] = useQueries({
-    queries: [
-      documentQueryOptions(id),
-      versionNumber
-        ? documentVersionQueryOptions(id, versionNumber)
-        : { enabled: false, queryFn: () => undefined, queryKey: ["documentVersion", id, versionNumber] },
-    ],
+  const [{ data: document, isLoadingError }, { data: documentVersion, isFetching: isLoadingDocumentVersion }] = useQueries({
+    queries: [documentQueryOptions(id), documentVersionQueryOptions(id, versionNumber)],
   });
 
   const {
@@ -32,12 +27,21 @@ export function DocumentRoute() {
     mutate: save,
   } = useMutation({
     mutationFn: (content: NodeJSON) => API.updateDocumentVersion(id, versionNumber, content),
+    onSuccess: (_, __, ___, ctx) => {
+      ctx.client.invalidateQueries({ queryKey: ["documents", id] });
+    },
   });
 
+  const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
+    mutationFn: (content: NodeJSON) => API.createDocumentVersion(id, content),
+    onSuccess: (_, __, ___, ctx) => {
+      ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
+    },
+  });
+
+  const content = useMemo(() => parseContent(documentVersion?.content), [documentVersion]);
   //TODO: Skeleton component
   if (isLoadingDocumentVersion) return null;
-
-  const content = parseContent(documentVersion?.content);
 
   return (
     <div className="flex h-full flex-col p-4">
@@ -45,6 +49,7 @@ export function DocumentRoute() {
         {document?.title ? (
           <div className="mr-auto flex items-center justify-between gap-2">
             {document?.title ? <h1 className="font-display text-4xl font-medium tracking-tight">{document.title}</h1> : null}
+            {documentVersion?.versionNumber ? <Badge title={`Version - ${documentVersion.versionNumber}`} /> : null}
           </div>
         ) : null}
         {isLoadingError ? <Badge size="xs" title="Failed to load" variant="error" /> : null}
@@ -63,28 +68,36 @@ export function DocumentRoute() {
       </div>
       {document ? <DocumentEditor documentId={id} initialContent={content} save={save} versionNumber={versionNumber} /> : null}
       <Drawer isOpen={isVersionsDrawerOpen} onClose={() => setIsVersionsDrawerOpen(false)}>
-        <div className="flex items-center justify-between border-b border-white/70 pb-5">
-          <h2 className="font-display text-primary text-2xl" id="document-versions-title">
-            Versions
-          </h2>
+        <div className="border-secondary/40 mb-4 flex items-center justify-between border-b">
+          <h2 className="font-display text-primary text-2xl">Versions</h2>
           <button
-            aria-label="Close version history"
-            className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded"
             onClick={() => setIsVersionsDrawerOpen(false)}
             type="button">
             <span aria-hidden="true" className="icon-[ph--x] block size-5" />
           </button>
+        </div>
+        <div className="ml-auto">
+          {document?.id ? (
+            <Button
+              isDisabled={isCreatingVersion}
+              onClick={() => {
+                if (content) createVersion(content);
+              }}
+              title="New version"
+            />
+          ) : null}
         </div>
         <nav aria-label="Document versions" className="mt-5">
           <ul className="space-y-2">
             {versions.map((version) => (
               <li key={version.id}>
                 <Link
-                  className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent block rounded px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="text-secondary hover:bg-surface-raised focus-visible:outline-accent hover:text-info block rounded text-lg font-medium transition-colors"
                   onClick={() => setIsVersionsDrawerOpen(false)}
                   params={{ id, versionNumber: version.versionNumber.toString() }}
                   to="/document/$id/$versionNumber">
-                  Version {version.versionNumber}
+                  Version {version.versionNumber} ({version.createdAt})
                 </Link>
               </li>
             ))}
