@@ -47,7 +47,7 @@ pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<DocumentSumm
                 (SELECT version_number FROM document_versions
                  WHERE document_id = d.id
                  ORDER BY version_number DESC LIMIT 1),
-                0
+                1
             ) AS current_version,
             d.updated_at
          FROM documents d
@@ -137,7 +137,7 @@ async fn fetch_document(state: &AppState, id: &str) -> Result<Document, AppError
                 (SELECT version_number FROM document_versions
                  WHERE document_id = d.id
                  ORDER BY version_number DESC LIMIT 1),
-                0
+                1
             ) AS current_version,
             d.created_at,
             d.updated_at
