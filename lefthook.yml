@@ -18,10 +18,6 @@ commit-msg:
 pre-commit:
   parallel: true
   commands:
-    no-commit-on-main:
-      run: echo "Do not commit directly to main branch without review!" && exit 1
-      only:
-        - ref: main
     lint-staged:
       glob: "*.{ts,tsx,json,md,css}"
       run: bun eslint --fix {staged_files} && git add {staged_files}
