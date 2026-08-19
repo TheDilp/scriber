@@ -1,10 +1,9 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-
-import type { DocumentSummary } from "@/utils/api";
+import { useState } from "react";
 
 import { Button, Input, Modal } from "@/components";
-import { createDocument, listDocuments } from "@/utils/api";
+import { API, type DocumentSummary } from "@/utils/api";
 
 function formatUpdated(dateString: string) {
   return new Date(dateString).toLocaleDateString(undefined, { day: "numeric", month: "short" }).toUpperCase();
@@ -13,32 +12,17 @@ function formatUpdated(dateString: string) {
 export function Home() {
   const navigate = useNavigate();
   const [newTitle, setNewTitle] = useState("");
-  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
   const [isNewPageModalOpen, setIsNewPageModalOpen] = useState(false);
 
-  useEffect(() => {
-    let isCancelled = false;
+  const { data: documents = [] } = useQuery<DocumentSummary[]>({
+    queryFn: API.listDocuments,
+    queryKey: ["documents", "home"],
+  });
+  const { isPending: isCreating, mutate: handleCreate } = useMutation({
+    mutationFn: API.createDocument,
 
-    listDocuments().then((docs) => {
-      if (!isCancelled) setDocuments(docs);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
-  async function handleCreate() {
-    setIsCreating(true);
-    try {
-      const docId = await createDocument(newTitle);
-      void navigate({ params: { id: docId }, to: "/document/$id" });
-    } finally {
-      setIsCreating(false);
-      setNewTitle("");
-    }
-  }
+    onSuccess: (docId) => navigate({ params: { id: docId }, to: "/document/$id" }),
+  });
 
   return (
     <div className="bg-layout min-h-screen">
@@ -105,7 +89,7 @@ export function Home() {
             <Button onClick={() => setIsNewPageModalOpen(false)} title="Cancel" variant="secondary" />
             <Button
               isDisabled={isCreating}
-              onClick={handleCreate}
+              onClick={() => handleCreate(newTitle)}
               title={isCreating ? "Creating..." : "Create"}
               variant="info"
             />
