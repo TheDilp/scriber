@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::{error::AppError, state::AppState};
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct DocumentSummary {
     pub id: String,
     pub title: String,
@@ -16,6 +17,7 @@ pub struct DocumentSummary {
 }
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct Document {
     pub id: String,
     pub title: String,

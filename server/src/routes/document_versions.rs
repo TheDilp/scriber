@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::{error::AppError, state::AppState};
 
 #[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct DocumentVersion {
     pub id: String,
     pub document_id: String,
