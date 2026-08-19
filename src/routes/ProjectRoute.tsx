@@ -34,7 +34,9 @@ export function ProjectRoute() {
         <header className="border-secondary/15 flex items-end justify-between gap-4 border-b pb-6">
           <div className="flex min-w-0 flex-col gap-1.5">
             <span className="text-tertiary font-mono text-[11px] tracking-[0.2em]">
-              {documents.length === 0 ? "EMPTY SHELF" : `${documents.length} ${documents.length === 1 ? "PAGE" : "PAGES"}`}
+              {documents.length === 0
+                ? "EMPTY SHELF"
+                : `${documents.length} ${documents.length === 1 ? "DOCUMENT" : "DOCUMENTS"}`}
             </span>
             <h1 className="font-display text-primary truncate text-4xl leading-none italic">{project?.title || "Untitled"}</h1>
           </div>
