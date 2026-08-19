@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      "@api": path.resolve(import.meta.dirname, "./src/api"),
       "@components": path.resolve(import.meta.dirname, "./src/components"),
       "@enums": path.resolve(import.meta.dirname, "./src/enums"),
       "@routes": path.resolve(import.meta.dirname, "./src/routes"),

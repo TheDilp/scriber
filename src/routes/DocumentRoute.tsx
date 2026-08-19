@@ -4,8 +4,8 @@ import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
+import { documentApi } from "@/api";
 import { Badge, Button, DocumentEditor, Drawer } from "@/components";
-import { API } from "@/utils/api";
 import { formatDateStringToDateTime } from "@/utils/datetime";
 import { parseContent } from "@/utils/document";
 import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
@@ -27,14 +27,14 @@ export function DocumentRoute() {
     isSuccess: isSaved,
     mutate: save,
   } = useMutation({
-    mutationFn: (content: NodeJSON) => API.updateDocumentVersion(id, versionNumber, content),
+    mutationFn: (content: NodeJSON) => documentApi.updateVersion(id, versionNumber, content),
     onSuccess: (_, __, ___, ctx) => {
       ctx.client.invalidateQueries({ queryKey: ["documents", id] });
     },
   });
 
   const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
-    mutationFn: (content: NodeJSON) => API.createDocumentVersion(id, content),
+    mutationFn: (content: NodeJSON) => documentApi.createVersion(id, content),
     onSuccess: (_, __, ___, ctx) => {
       ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
     },
