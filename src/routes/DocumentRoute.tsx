@@ -49,24 +49,9 @@ export function DocumentRoute() {
         {isSaved ? <Badge title="Saved" variant="success" /> : null}
         {isSaving ? <Badge title="Saving…" variant="info" /> : null}
         {isSaveError ? <Badge title="Save failed" variant="error" /> : null}
-        <button
-          aria-controls="document-versions-title"
-          aria-expanded={isDrawerOpen === "documentVersions"}
-          aria-label="Open version history"
-          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent cursor-pointer rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
-          onClick={() => setIsDrawerOpen("documentVersions")}
-          type="button">
-          <span aria-hidden="true" className="icon-[ph--clock-counter-clockwise] block size-6" />
-        </button>
-        <button
-          aria-controls="document-settings-title"
-          aria-expanded={isDrawerOpen === "documentSettings"}
-          aria-label="Open version history"
-          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
-          onClick={() => setIsDrawerOpen("documentSettings")}
-          type="button">
-          <span aria-hidden="true" className="icon-[ph--gear] block size-6 cursor-pointer" />
-        </button>
+
+        <Button icon="icon-[ph--clock-counter-clockwise]" onClick={() => setIsDrawerOpen("documentVersions")} />
+        <Button icon="icon-[ph--gear]" onClick={() => setIsDrawerOpen("documentSettings")} />
       </div>
       {document ? <DocumentEditor documentId={id} initialContent={content} save={save} versionNumber={versionNumber} /> : null}
       <Drawer isOpen={isDrawerOpen !== null} onClose={() => setIsDrawerOpen(null)}>
@@ -98,12 +83,7 @@ function DocumentVersionsDrawer({
     <>
       <div className="border-secondary/40 mb-4 flex items-center justify-between border-b">
         <h2 className="font-display text-primary text-2xl">Versions</h2>
-        <button
-          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent cursor-pointer rounded"
-          onClick={() => setIsDrawerOpen(null)}
-          type="button">
-          <span aria-hidden="true" className="icon-[ph--x] block size-5" />
-        </button>
+        <Button icon="icon-[ph--x]" onClick={() => setIsDrawerOpen(null)} />
       </div>
       <div className="ml-auto">
         {id ? (
