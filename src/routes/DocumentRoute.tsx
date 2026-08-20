@@ -14,8 +14,7 @@ const routeApi = getRouteApi("/document/$id/$versionNumber");
 
 export function DocumentRoute() {
   const { id, versionNumber } = routeApi.useParams();
-  const [isVersionsDrawerOpen, setIsVersionsDrawerOpen] = useState(false);
-  const { data: versions = [] } = useQuery(documentVersionsQueryOptions(id));
+  const [isDrawerOpen, setIsDrawerOpen] = useState<"documentSettings" | "documentVersions" | null>(null);
 
   const [{ data: document, isLoadingError }, { data: documentVersion, isFetching: isLoadingDocumentVersion }] = useQueries({
     queries: [documentQueryOptions(id), documentVersionQueryOptions(id, versionNumber)],
@@ -30,13 +29,6 @@ export function DocumentRoute() {
     mutationFn: (content: NodeJSON) => documentApi.updateVersion(id, versionNumber, content),
     onSuccess: (_, __, ___, ctx) => {
       ctx.client.invalidateQueries({ queryKey: ["documents", id] });
-    },
-  });
-
-  const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
-    mutationFn: (content: NodeJSON) => documentApi.createVersion(id, content),
-    onSuccess: (_, __, ___, ctx) => {
-      ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
     },
   });
 
@@ -59,58 +51,92 @@ export function DocumentRoute() {
         {isSaveError ? <Badge title="Save failed" variant="error" /> : null}
         <button
           aria-controls="document-versions-title"
-          aria-expanded={isVersionsDrawerOpen}
+          aria-expanded={isDrawerOpen === "documentVersions"}
           aria-label="Open version history"
-          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
-          onClick={() => setIsVersionsDrawerOpen(true)}
+          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent cursor-pointer rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+          onClick={() => setIsDrawerOpen("documentVersions")}
           type="button">
           <span aria-hidden="true" className="icon-[ph--clock-counter-clockwise] block size-6" />
         </button>
+        <button
+          aria-controls="document-settings-title"
+          aria-expanded={isDrawerOpen === "documentSettings"}
+          aria-label="Open version history"
+          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded p-1 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+          onClick={() => setIsDrawerOpen("documentSettings")}
+          type="button">
+          <span aria-hidden="true" className="icon-[ph--gear] block size-6 cursor-pointer" />
+        </button>
       </div>
       {document ? <DocumentEditor documentId={id} initialContent={content} save={save} versionNumber={versionNumber} /> : null}
-      <Drawer isOpen={isVersionsDrawerOpen} onClose={() => setIsVersionsDrawerOpen(false)}>
-        <div className="border-secondary/40 mb-4 flex items-center justify-between border-b">
-          <h2 className="font-display text-primary text-2xl">Versions</h2>
-          <button
-            className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent rounded"
-            onClick={() => setIsVersionsDrawerOpen(false)}
-            type="button">
-            <span aria-hidden="true" className="icon-[ph--x] block size-5" />
-          </button>
-        </div>
-        <div className="ml-auto">
-          {document?.id ? (
-            <Button
-              isDisabled={isCreatingVersion}
-              onClick={() => {
-                if (content) createVersion(content);
-              }}
-              title="New version"
-            />
-          ) : null}
-        </div>
-        <nav aria-label="Document versions" className="mt-5">
-          <ul className="space-y-2">
-            {versions.map((version) => (
-              <li key={version.id} className="border-secondary/40 flex w-full items-center gap-2 rounded-md border p-2 shadow">
-                <span className="flex-1">
-                  Version {version.versionNumber} &nbsp;
-                  <span className="text-sm">({formatDateStringToDateTime(version.createdAt)})</span>
-                </span>
-                <Link
-                  className="text-secondary hover:text-info flex items-center justify-between gap-x-2 text-lg font-medium transition-colors"
-                  onClick={() => setIsVersionsDrawerOpen(false)}
-                  params={{ id, versionNumber: version.versionNumber.toString() }}
-                  to="/document/$id/$versionNumber">
-                  <Button onClick={() => {}} size="sm" title="Open" variant="info" />
-                </Link>
-
-                <Button onClick={() => {}} size="sm" title="Delete" variant="error" />
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <Drawer isOpen={isDrawerOpen !== null} onClose={() => setIsDrawerOpen(null)}>
+        {isDrawerOpen === "documentVersions" ? (
+          <DocumentVersionsDrawer content={content} setIsDrawerOpen={setIsDrawerOpen} />
+        ) : null}
       </Drawer>
     </div>
+  );
+}
+
+function DocumentVersionsDrawer({
+  content,
+  setIsDrawerOpen,
+}: {
+  content: NodeJSON | undefined;
+  setIsDrawerOpen: (v: null) => void;
+}) {
+  const { id } = routeApi.useParams();
+  const { data: versions = [] } = useQuery(documentVersionsQueryOptions(id));
+
+  const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
+    mutationFn: (content: NodeJSON) => documentApi.createVersion(id, content),
+    onSuccess: (_, __, ___, ctx) => {
+      ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
+    },
+  });
+  return (
+    <>
+      <div className="border-secondary/40 mb-4 flex items-center justify-between border-b">
+        <h2 className="font-display text-primary text-2xl">Versions</h2>
+        <button
+          className="text-secondary hover:bg-surface-raised hover:text-primary focus-visible:outline-accent cursor-pointer rounded"
+          onClick={() => setIsDrawerOpen(null)}
+          type="button">
+          <span aria-hidden="true" className="icon-[ph--x] block size-5" />
+        </button>
+      </div>
+      <div className="ml-auto">
+        {id ? (
+          <Button
+            isDisabled={isCreatingVersion}
+            onClick={() => {
+              if (content) createVersion(content);
+            }}
+            title="New version"
+          />
+        ) : null}
+      </div>
+      <nav aria-label="Document versions" className="mt-5">
+        <ul className="space-y-2">
+          {versions.map((version) => (
+            <li key={version.id} className="border-secondary/40 flex w-full items-center gap-2 rounded-md border p-2 shadow">
+              <span className="flex-1">
+                Version {version.versionNumber} &nbsp;
+                <span className="text-sm">({formatDateStringToDateTime(version.createdAt)})</span>
+              </span>
+              <Link
+                className="text-secondary hover:text-info flex items-center justify-between gap-x-2 text-lg font-medium transition-colors"
+                onClick={() => setIsDrawerOpen(null)}
+                params={{ id, versionNumber: version.versionNumber.toString() }}
+                to="/document/$id/$versionNumber">
+                <Button onClick={() => {}} size="sm" title="Open" variant="info" />
+              </Link>
+
+              <Button onClick={() => {}} size="sm" title="Delete" variant="error" />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   );
 }
