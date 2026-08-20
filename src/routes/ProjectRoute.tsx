@@ -27,7 +27,11 @@ export function ProjectRoute() {
   });
   const { isPending: isCreating, mutate: createDocument } = useMutation({
     mutationFn: API.documents.create,
-    onSuccess: (id) => navigate({ params: { id, versionNumber: "1" }, to: "/document/$id/$versionNumber" }),
+    onSuccess: (documentId) =>
+      navigate({
+        params: { documentId, projectId, versionNumber: "1" },
+        to: "/$projectId/document/$documentId/$versionNumber",
+      }),
   });
 
   return (
@@ -61,8 +65,8 @@ export function ProjectRoute() {
               <li key={document.id} className="group border-secondary/10 flex h-12 gap-4 border-b last:border-none">
                 <Link
                   className="relative flex flex-1 items-center justify-between gap-4 py-4 pl-4"
-                  params={{ id: document.id, versionNumber: "1" }}
-                  to="/document/$id/$versionNumber">
+                  params={{ documentId: document.id, projectId, versionNumber: "1" }}
+                  to="/$projectId/document/$documentId/$versionNumber">
                   <span className="bg-accent absolute top-1/2 left-0 h-0 w-0.75 -translate-y-1/2 transition-[height] duration-200 ease-out group-hover:h-2/3" />
                   <span className="font-display text-primary truncate text-lg italic">{document.title || "Untitled"}</span>
                   <span className="text-tertiary shrink-0 font-mono text-[11px] tracking-wide">

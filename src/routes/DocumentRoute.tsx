@@ -16,14 +16,14 @@ import {
   documentVersionsQueryOptions,
 } from "@/utils/queries";
 
-const routeApi = getRouteApi("/document/$id/$versionNumber");
+const routeApi = getRouteApi("/$projectId/document/$documentId/$versionNumber");
 
 export function DocumentRoute() {
-  const { id, versionNumber } = routeApi.useParams();
+  const { documentId, versionNumber } = routeApi.useParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState<"documentSettings" | "documentVersions" | null>(null);
 
   const [{ data: document, isLoadingError }, { data: documentVersion, isFetching: isLoadingDocumentVersion }] = useQueries({
-    queries: [documentQueryOptions(id), documentVersionQueryOptions(id, versionNumber)],
+    queries: [documentQueryOptions(documentId), documentVersionQueryOptions(documentId, versionNumber)],
   });
 
   const {
@@ -32,9 +32,9 @@ export function DocumentRoute() {
     isSuccess: isSaved,
     mutate: save,
   } = useMutation({
-    mutationFn: (content: NodeJSON) => API.documentVersions.update(id, versionNumber, content),
+    mutationFn: (content: NodeJSON) => API.documentVersions.update(documentId, versionNumber, content),
     onSuccess: (_, __, ___, ctx) => {
-      ctx.client.invalidateQueries({ queryKey: ["documents", id] });
+      ctx.client.invalidateQueries({ queryKey: ["documents", documentId] });
     },
   });
 
@@ -43,7 +43,7 @@ export function DocumentRoute() {
   if (isLoadingDocumentVersion) return null;
 
   return (
-    <div className="flex h-full flex-col p-4">
+    <div className="flex flex-1 flex-col p-4">
       <div className="flex items-center gap-4">
         {document?.title ? (
           <div className="mr-auto flex items-center justify-between gap-2">
@@ -59,7 +59,9 @@ export function DocumentRoute() {
         <Button icon="icon-[ph--clock-counter-clockwise]" onClick={() => setIsDrawerOpen("documentVersions")} />
         <Button icon="icon-[ph--gear]" onClick={() => setIsDrawerOpen("documentSettings")} />
       </div>
-      {document ? <DocumentEditor documentId={id} initialContent={content} save={save} versionNumber={versionNumber} /> : null}
+      {document ? (
+        <DocumentEditor documentId={documentId} initialContent={content} save={save} versionNumber={versionNumber} />
+      ) : null}
       <Drawer isOpen={isDrawerOpen !== null} onClose={() => setIsDrawerOpen(null)}>
         {isDrawerOpen === "documentVersions" ? (
           <DocumentVersionsDrawer content={content} setIsDrawerOpen={setIsDrawerOpen} />
@@ -71,8 +73,8 @@ export function DocumentRoute() {
 }
 
 function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null) => void }) {
-  const { id } = routeApi.useParams();
-  const { data: document } = useQuery(documentQueryOptions(id));
+  const { documentId } = routeApi.useParams();
+  const { data: document } = useQuery(documentQueryOptions(documentId));
   const { data: tags = [] } = useQuery({
     enabled: Boolean(document?.projectId),
     queryFn: () => API.tags.listByProject(document?.projectId ?? ""),
@@ -82,18 +84,18 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
 
   const queryClient = useQueryClient();
 
-  const { data: documentTags = [] } = useQuery(documentTagsQueryOptions(id));
+  const { data: documentTags = [] } = useQuery(documentTagsQueryOptions(documentId));
   const selectedTags = documentTags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
 
   function invalidateTags() {
-    return queryClient.invalidateQueries({ queryKey: ["documentTags", id] });
+    return queryClient.invalidateQueries({ queryKey: ["documentTags", documentId] });
   }
   const { mutate: createTag } = useMutation({
-    mutationFn: (title: string) => API.tags.createForDocument(id, title),
+    mutationFn: (title: string) => API.tags.createForDocument(documentId, title),
     onSuccess: invalidateTags,
   });
   const { mutate: removeTag } = useMutation({
-    mutationFn: (tagId: string) => API.tags.removeFromDocument(id, tagId),
+    mutationFn: (tagId: string) => API.tags.removeFromDocument(documentId, tagId),
     onSuccess: invalidateTags,
   });
 
@@ -108,18 +110,18 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
     if (removed) removeTag(removed.id);
   }
 
-  const { data: documentAliases = [] } = useQuery(documentAliasesQueryOptions(id));
+  const { data: documentAliases = [] } = useQuery(documentAliasesQueryOptions(documentId));
   const aliases = documentAliases.map(({ id: aliasId, title }) => ({ id: aliasId, label: title }));
 
   function invalidateAliases() {
-    return queryClient.invalidateQueries({ queryKey: ["documentAliases", id] });
+    return queryClient.invalidateQueries({ queryKey: ["documentAliases", documentId] });
   }
   const { mutate: createAlias } = useMutation({
-    mutationFn: (title: string) => API.aliases.createForDocument(id, title),
+    mutationFn: (title: string) => API.aliases.createForDocument(documentId, title),
     onSuccess: invalidateAliases,
   });
   const { mutate: removeAlias } = useMutation({
-    mutationFn: (aliasId: string) => API.aliases.removeFromDocument(id, aliasId),
+    mutationFn: (aliasId: string) => API.aliases.removeFromDocument(documentId, aliasId),
     onSuccess: invalidateAliases,
   });
 
@@ -169,13 +171,13 @@ function DocumentVersionsDrawer({
   content: NodeJSON | undefined;
   setIsDrawerOpen: (v: null) => void;
 }) {
-  const { id } = routeApi.useParams();
-  const { data: versions = [] } = useQuery(documentVersionsQueryOptions(id));
+  const { documentId, projectId } = routeApi.useParams();
+  const { data: versions = [] } = useQuery(documentVersionsQueryOptions(documentId));
 
   const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
-    mutationFn: (content: NodeJSON) => API.documentVersions.create(id, content),
+    mutationFn: (content: NodeJSON) => API.documentVersions.create(documentId, content),
     onSuccess: (_, __, ___, ctx) => {
-      ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
+      ctx.client.invalidateQueries({ queryKey: ["documentVersions", documentId] });
     },
   });
   return (
@@ -185,7 +187,7 @@ function DocumentVersionsDrawer({
         <Button icon="icon-[ph--x]" onClick={() => setIsDrawerOpen(null)} />
       </div>
       <div className="ml-auto">
-        {id ? (
+        {documentId ? (
           <Button
             isDisabled={isCreatingVersion}
             onClick={() => {
@@ -206,8 +208,8 @@ function DocumentVersionsDrawer({
               <Link
                 className="text-secondary hover:text-info flex items-center justify-between gap-x-2 text-lg font-medium transition-colors"
                 onClick={() => setIsDrawerOpen(null)}
-                params={{ id, versionNumber: version.versionNumber.toString() }}
-                to="/document/$id/$versionNumber">
+                params={{ documentId, projectId, versionNumber: version.versionNumber.toString() }}
+                to="/$projectId/document/$documentId/$versionNumber">
                 <Button onClick={() => {}} size="sm" title="Open" variant="info" />
               </Link>
 

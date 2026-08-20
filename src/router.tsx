@@ -4,12 +4,15 @@ import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/re
 import { DocumentRoute, Home, ProjectRoute } from "@/routes";
 import { documentQueryOptions, documentVersionQueryOptions } from "@/utils/queries";
 
+import { Navbar } from "./components";
+
 const queryClient = new QueryClient({});
 
 const rootRoute = createRootRoute({
   component: () => (
     <QueryClientProvider client={queryClient}>
-      <main className="h-svh w-svw">
+      <main className="flex h-svh w-svw flex-col overflow-hidden">
+        <Navbar />
         <Outlet />
       </main>
     </QueryClientProvider>
@@ -26,10 +29,10 @@ const documentRoute = createRoute({
   component: DocumentRoute,
   getParentRoute: () => rootRoute,
   loader: ({ params }) => {
-    queryClient.ensureQueryData(documentQueryOptions(params.id));
-    if (params.versionNumber) queryClient.ensureQueryData(documentVersionQueryOptions(params.id, params.versionNumber));
+    queryClient.ensureQueryData(documentQueryOptions(params.documentId));
+    if (params.versionNumber) queryClient.ensureQueryData(documentVersionQueryOptions(params.documentId, params.versionNumber));
   },
-  path: "/document/$id/$versionNumber",
+  path: "/$projectId/document/$documentId/$versionNumber",
 });
 
 const projectRoute = createRoute({
