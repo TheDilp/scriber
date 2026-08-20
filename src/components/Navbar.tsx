@@ -7,6 +7,7 @@ import { searchQueryOptions } from "@/queries";
 import { Button } from "./Button";
 import { Drawer } from "./Drawer";
 import { Input } from "./Input";
+import { List } from "./List";
 
 export function Navbar() {
   const { documentId, projectId } = useParams({ strict: false });
@@ -54,25 +55,26 @@ export function Navbar() {
           <h2 className="font-display text-primary text-2xl">Search</h2>
           <Button icon="icon-[ph--x]" onClick={() => setIsSearchOpen(false)} />
         </div>
-        <Input onChange={(e) => setSearchValue(e.target.value)} placeholder="Search documents…" value={searchValue} />
+
+        <div className="mt-4">
+          <Input onChange={(e) => setSearchValue(e.target.value)} placeholder="Search documents…" value={searchValue} />
+        </div>
         <nav aria-label="Search results" className="mt-5">
-          <ul className="space-y-2">
-            {results.map((result) => (
-              <li key={result.id} className="border-secondary/40 rounded-md border p-2 shadow">
-                <Link
-                  className="text-primary hover:text-info flex flex-col gap-0.5 text-sm font-medium transition-colors"
-                  onClick={() => setIsSearchOpen(false)}
-                  params={{
-                    documentId: result.id,
-                    projectId: result.projectId,
-                    versionNumber: result.currentVersion.toString(),
-                  }}
-                  to="/$projectId/document/$documentId/$versionNumber">
-                  {result.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <List
+            items={results.map((result) => ({
+              id: result.id,
+              link: {
+                onClick: () => setIsSearchOpen(false),
+                params: {
+                  documentId: result.id,
+                  projectId: result.projectId,
+                  versionNumber: result.currentVersion.toString(),
+                },
+                to: "/$projectId/document/$documentId/$versionNumber",
+              },
+              title: result.title,
+            }))}
+          />
         </nav>
       </Drawer>
     </nav>
