@@ -1,9 +1,20 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
+import { useDeferredValue, useState } from "react";
+
+import { searchQueryOptions } from "@/utils/queries";
 
 import { Button } from "./Button";
+import { Drawer } from "./Drawer";
+import { Input } from "./Input";
 
 export function Navbar() {
   const { documentId, projectId } = useParams({ strict: false });
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const deferredSearchValue = useDeferredValue(searchValue);
+  const { data: results = [] } = useQuery(searchQueryOptions(deferredSearchValue));
+
   return (
     <nav
       aria-label="Document navigation"
@@ -35,8 +46,35 @@ export function Navbar() {
       ) : null}
 
       <div className="ml-auto">
-        <Button icon="icon-[ph--magnifying-glass]" onClick={undefined} />
+        <Button icon="icon-[ph--magnifying-glass]" onClick={() => setIsSearchOpen(true)} />
       </div>
+
+      <Drawer isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}>
+        <div className="border-secondary/40 mb-6 flex items-center justify-between border-b pb-4">
+          <h2 className="font-display text-primary text-2xl">Search</h2>
+          <Button icon="icon-[ph--x]" onClick={() => setIsSearchOpen(false)} />
+        </div>
+        <Input onChange={(e) => setSearchValue(e.target.value)} placeholder="Search documents…" value={searchValue} />
+        <nav aria-label="Search results" className="mt-5">
+          <ul className="space-y-2">
+            {results.map((result) => (
+              <li key={result.id} className="border-secondary/40 rounded-md border p-2 shadow">
+                <Link
+                  className="text-primary hover:text-info flex flex-col gap-0.5 text-sm font-medium transition-colors"
+                  onClick={() => setIsSearchOpen(false)}
+                  params={{
+                    documentId: result.id,
+                    projectId: result.projectId,
+                    versionNumber: result.currentVersion.toString(),
+                  }}
+                  to="/$projectId/document/$documentId/$versionNumber">
+                  {result.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </Drawer>
     </nav>
   );
 }

@@ -1,6 +1,7 @@
 export type DocumentSummary = {
   currentVersion: number;
   id: string;
+  projectId: string;
   title: string;
   updatedAt: string;
 };
