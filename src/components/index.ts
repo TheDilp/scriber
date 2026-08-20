@@ -8,5 +8,7 @@ export { Dropdown } from "./Dropdown";
 export type { DropdownOption } from "./Dropdown";
 
 export { Input } from "./Input";
+export { List } from "./List";
+export type { ListItem } from "./List";
 export { Modal } from "./Modal";
 export { Navbar } from "./Navbar";
