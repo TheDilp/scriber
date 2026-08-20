@@ -3,7 +3,7 @@ CREATE VIRTUAL TABLE document_search USING fts5(
   title,
   aliases,
   content,
-  tokenize = 'unicode61'
+  tokenize = 'trigram'
 );
 
 INSERT INTO document_search (document_id, title, aliases, content)
