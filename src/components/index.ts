@@ -9,3 +9,4 @@ export type { DropdownOption } from "./Dropdown";
 
 export { Input } from "./Input";
 export { Modal } from "./Modal";
+export { Navbar } from "./Navbar";
