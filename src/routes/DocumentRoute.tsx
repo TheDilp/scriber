@@ -6,15 +6,15 @@ import { useMemo, useState } from "react";
 
 import { API } from "@/api";
 import { Autocomplete, type AutocompleteOption, Badge, Button, DocumentEditor, Drawer } from "@/components";
-import { formatDateStringToDateTime } from "@/utils/datetime";
-import { parseContent } from "@/utils/document";
 import {
   documentAliasesQueryOptions,
   documentQueryOptions,
   documentTagsQueryOptions,
   documentVersionQueryOptions,
   documentVersionsQueryOptions,
-} from "@/utils/queries";
+} from "@/queries";
+import { formatDateStringToDateTime } from "@/utils/datetime";
+import { parseContent } from "@/utils/document";
 
 const routeApi = getRouteApi("/$projectId/document/$documentId/$versionNumber");
 

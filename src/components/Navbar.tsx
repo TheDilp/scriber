@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 
-import { searchQueryOptions } from "@/utils/queries";
+import { searchQueryOptions } from "@/queries";
 
 import { Button } from "./Button";
 import { Drawer } from "./Drawer";

@@ -12,6 +12,7 @@ export default defineConfig({
       "@api": path.resolve(import.meta.dirname, "./src/api"),
       "@components": path.resolve(import.meta.dirname, "./src/components"),
       "@enums": path.resolve(import.meta.dirname, "./src/enums"),
+      "@queries": path.resolve(import.meta.dirname, "./src/queries"),
       "@routes": path.resolve(import.meta.dirname, "./src/routes"),
       "@types": path.resolve(import.meta.dirname, "./src/types"),
       "@utils": path.resolve(import.meta.dirname, "./src/utils"),

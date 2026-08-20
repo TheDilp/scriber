@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 
+import { documentQueryOptions, documentVersionQueryOptions } from "@/queries";
 import { DocumentRoute, Home, ProjectRoute } from "@/routes";
-import { documentQueryOptions, documentVersionQueryOptions } from "@/utils/queries";
 
 import { Navbar } from "./components";
 
