@@ -9,6 +9,13 @@ export function documentQueryOptions(id: string) {
   });
 }
 
+export function documentAliasesQueryOptions(id: string) {
+  return queryOptions({
+    queryFn: () => API.aliases.listByDocument(id),
+    queryKey: ["documentAliases", id],
+  });
+}
+
 export function documentVersionsQueryOptions(id: string) {
   return queryOptions({
     queryFn: () => API.documentVersions.list(id),

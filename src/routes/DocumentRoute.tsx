@@ -1,6 +1,6 @@
 import type { NodeJSON } from "prosekit/core";
 
-import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
@@ -8,7 +8,12 @@ import { API } from "@/api";
 import { Autocomplete, type AutocompleteOption, Badge, Button, DocumentEditor, Drawer } from "@/components";
 import { formatDateStringToDateTime } from "@/utils/datetime";
 import { parseContent } from "@/utils/document";
-import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
+import {
+  documentAliasesQueryOptions,
+  documentQueryOptions,
+  documentVersionQueryOptions,
+  documentVersionsQueryOptions,
+} from "@/utils/queries";
 
 const routeApi = getRouteApi("/document/$id/$versionNumber");
 
@@ -66,7 +71,6 @@ export function DocumentRoute() {
 
 function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null) => void }) {
   const { id } = routeApi.useParams();
-  const [aliases, setAliases] = useState<AutocompleteOption[]>([]);
   const [selectedTags, setSelectedTags] = useState<AutocompleteOption[]>([]);
   const { data: document } = useQuery(documentQueryOptions(id));
   const { data: tags = [] } = useQuery({
@@ -75,6 +79,33 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
     queryKey: ["tags", document?.projectId],
   });
   const tagOptions = tags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
+
+  const queryClient = useQueryClient();
+  const { data: documentAliases = [] } = useQuery(documentAliasesQueryOptions(id));
+  const aliases = documentAliases.map(({ id: aliasId, title }) => ({ id: aliasId, label: title }));
+
+  function invalidateAliases() {
+    return queryClient.invalidateQueries({ queryKey: ["documentAliases", id] });
+  }
+  const { mutate: createAlias } = useMutation({
+    mutationFn: (title: string) => API.aliases.createForDocument(id, title),
+    onSuccess: invalidateAliases,
+  });
+  const { mutate: removeAlias } = useMutation({
+    mutationFn: (aliasId: string) => API.aliases.removeFromDocument(id, aliasId),
+    onSuccess: invalidateAliases,
+  });
+
+  function handleAliasesChange(next: AutocompleteOption[]) {
+    const added = next.find((option) => !aliases.some(({ id: aliasId }) => aliasId === option.id));
+    if (added) {
+      createAlias(added.label);
+      return;
+    }
+
+    const removed = aliases.find((option) => !next.some(({ id: aliasId }) => aliasId === option.id));
+    if (removed) removeAlias(removed.id);
+  }
 
   return (
     <>
@@ -92,7 +123,7 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
         />
         <Autocomplete
           allowCustomValues
-          onChange={setAliases}
+          onChange={handleAliasesChange}
           options={[]}
           placeholder="Type an alias and press Enter"
           title="Document aliases"
