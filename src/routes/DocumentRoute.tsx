@@ -5,12 +5,17 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { documentApi } from "@/api";
-import { Badge, Button, DocumentEditor, Drawer } from "@/components";
+import { Autocomplete, type AutocompleteOption, Badge, Button, DocumentEditor, Drawer } from "@/components";
 import { formatDateStringToDateTime } from "@/utils/datetime";
 import { parseContent } from "@/utils/document";
 import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
 const routeApi = getRouteApi("/document/$id/$versionNumber");
+
+type Tag = {
+  id: string;
+  title: string;
+};
 
 export function DocumentRoute() {
   const { id, versionNumber } = routeApi.useParams();
@@ -58,8 +63,52 @@ export function DocumentRoute() {
         {isDrawerOpen === "documentVersions" ? (
           <DocumentVersionsDrawer content={content} setIsDrawerOpen={setIsDrawerOpen} />
         ) : null}
+        {isDrawerOpen === "documentSettings" ? <DocumentSettingsDrawer setIsDrawerOpen={setIsDrawerOpen} /> : null}
       </Drawer>
     </div>
+  );
+}
+
+function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null) => void }) {
+  const { id } = routeApi.useParams();
+  const [aliases, setAliases] = useState<AutocompleteOption[]>([]);
+  const [selectedTags, setSelectedTags] = useState<AutocompleteOption[]>([]);
+  const { data: document } = useQuery(documentQueryOptions(id));
+  const { data: tags = [] } = useQuery({
+    enabled: Boolean(document?.projectId),
+    queryFn: async (): Promise<Tag[]> => {
+      const response = await fetch(`/api/v1/projects/${document?.projectId}/tags`);
+      if (!response.ok) throw new Error("Failed to load tags");
+      return response.json() as Promise<Tag[]>;
+    },
+    queryKey: ["tags", document?.projectId],
+  });
+  const tagOptions = tags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
+
+  return (
+    <>
+      <div className="border-secondary/40 mb-6 flex items-center justify-between border-b pb-4">
+        <h2 className="font-display text-primary text-2xl">Document settings</h2>
+        <Button icon="icon-[ph--x]" onClick={() => setIsDrawerOpen(null)} />
+      </div>
+      <div className="flex flex-col gap-6">
+        <Autocomplete
+          onChange={setSelectedTags}
+          options={tagOptions}
+          placeholder="Search tags"
+          title="Tags"
+          value={selectedTags}
+        />
+        <Autocomplete
+          allowCustomValues
+          onChange={setAliases}
+          options={[]}
+          placeholder="Type an alias and press Enter"
+          title="Document aliases"
+          value={aliases}
+        />
+      </div>
+    </>
   );
 }
 
