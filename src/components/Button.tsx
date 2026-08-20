@@ -2,9 +2,11 @@ import type { MouseEventHandler } from "react";
 
 import { tv } from "tailwind-variants";
 
+import type { AvailableIconsType } from "@/enums/icons";
 import type { BaseComponentType } from "@/types";
 
 type Props = {
+  icon?: AvailableIconsType;
   isDisabled?: boolean;
   isFullWidth?: boolean;
   onClick: MouseEventHandler<HTMLButtonElement> | undefined;
@@ -32,6 +34,9 @@ const classes = tv({
       success: "bg-success hover:bg-success/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
       tertiary: "bg-tertiary hover:bg-tertiary/90 text-white shadow-sm inset-shadow-sm inset-shadow-white/10 hover:shadow-md",
     },
+    isIconOnly: {
+      true: "border-0 bg-transparent px-1 text-black shadow-none hover:bg-transparent hover:shadow-none",
+    },
   },
   defaultVariants: {
     size: "md",
@@ -39,10 +44,14 @@ const classes = tv({
   },
 });
 
-export function Button({ isDisabled = false, isFullWidth = false, onClick, size, title, variant }: Props) {
+export function Button({ icon, isDisabled = false, isFullWidth = false, onClick, size, title, variant }: Props) {
   return (
-    <button className={classes({ isFullWidth, size, variant })} disabled={isDisabled} onClick={onClick}>
+    <button
+      className={classes({ isFullWidth, isIconOnly: !title && !!icon, size, variant })}
+      disabled={isDisabled}
+      onClick={onClick}>
       {title ? <span>{title}</span> : null}
+      {icon ? <span className={`size-6 ${icon}`} /> : null}
     </button>
   );
 }
