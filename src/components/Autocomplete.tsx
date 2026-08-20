@@ -22,6 +22,7 @@ export type AutocompleteOption = {
 };
 
 type AutocompleteProps = {
+  allowCustomValues?: boolean;
   onChange: (value: AutocompleteOption[]) => void;
   options: AutocompleteOption[];
   placeholder?: string;
@@ -80,7 +81,16 @@ const classes = tv({
   },
 });
 
-export function Autocomplete({ onChange, options, placeholder, size, title, value, variant }: AutocompleteProps) {
+export function Autocomplete({
+  allowCustomValues = false,
+  onChange,
+  options,
+  placeholder,
+  size,
+  title,
+  value,
+  variant,
+}: AutocompleteProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -135,6 +145,16 @@ export function Autocomplete({ onChange, options, placeholder, size, title, valu
     focusInput();
   }
 
+  function addCustomValue() {
+    const label = query.trim();
+    if (!label || value.some((option) => option.label.toLocaleLowerCase() === label.toLocaleLowerCase())) return;
+
+    onChange([...value, { id: label, label }]);
+    setActiveIndex(null);
+    setQuery("");
+    setIsOpen(false);
+  }
+
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     setQuery(event.target.value);
     setActiveIndex(null);
@@ -169,6 +189,12 @@ export function Autocomplete({ onChange, options, placeholder, size, title, valu
     if (event.key === "Enter" && activeIndex !== null && isListboxOpen) {
       event.preventDefault();
       selectOption(matches[activeIndex]);
+      return;
+    }
+
+    if (event.key === "Enter" && allowCustomValues) {
+      event.preventDefault();
+      addCustomValue();
       return;
     }
 
