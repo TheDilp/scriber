@@ -1,24 +1,24 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { documentApi } from "@/api";
+import { API } from "@/api";
 
 export function documentQueryOptions(id: string) {
   return queryOptions({
-    queryFn: () => documentApi.get(id),
+    queryFn: () => API.documents.get(id),
     queryKey: ["documents", id],
   });
 }
 
 export function documentVersionsQueryOptions(id: string) {
   return queryOptions({
-    queryFn: () => documentApi.listVersions(id),
+    queryFn: () => API.documentVersions.list(id),
     queryKey: ["documentVersions", id],
   });
 }
 
 export function documentVersionQueryOptions(documentId: string, versionId: string) {
   return queryOptions({
-    queryFn: () => documentApi.getVersion(documentId, versionId),
+    queryFn: () => API.documentVersions.get(documentId, versionId),
     queryKey: ["documentVersion", documentId, versionId],
   });
 }

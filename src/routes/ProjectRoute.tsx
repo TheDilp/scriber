@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { documentApi, type DocumentSummary, projectApi } from "@/api";
+import { API, type DocumentSummary } from "@/api";
 import { Button, Input, Modal } from "@/components";
 
 function formatUpdated(dateString: string) {
@@ -16,15 +16,15 @@ export function ProjectRoute() {
   const [isNewDocumentModalOpen, setIsNewDocumentModalOpen] = useState(false);
 
   const { data: project } = useQuery({
-    queryFn: () => projectApi.get(projectId),
+    queryFn: () => API.projects.get(projectId),
     queryKey: ["projects", projectId],
   });
   const { data: documents = [] } = useQuery<DocumentSummary[]>({
-    queryFn: documentApi.list,
+    queryFn: API.documents.list,
     queryKey: ["projects", projectId, "documents"],
   });
   const { isPending: isCreating, mutate: createDocument } = useMutation({
-    mutationFn: documentApi.create,
+    mutationFn: API.documents.create,
     onSuccess: (id) => navigate({ params: { id, versionNumber: "1" }, to: "/document/$id/$versionNumber" }),
   });
 

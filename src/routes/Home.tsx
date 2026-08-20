@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { type Project, projectApi } from "@/api";
+import { API, type Project } from "@/api";
 import { Button, Input, Modal } from "@/components";
 
 function formatUpdated(dateString: string) {
@@ -15,11 +15,11 @@ export function Home() {
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
   const { data: projects = [] } = useQuery<Project[]>({
-    queryFn: projectApi.list,
+    queryFn: API.projects.list,
     queryKey: ["home", "projects"],
   });
   const { isPending: isCreating, mutate: handleCreate } = useMutation({
-    mutationFn: projectApi.create,
+    mutationFn: API.projects.create,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["home", "projects"] });
       setNewTitle("");

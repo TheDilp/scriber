@@ -4,18 +4,13 @@ import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { documentApi } from "@/api";
+import { API } from "@/api";
 import { Autocomplete, type AutocompleteOption, Badge, Button, DocumentEditor, Drawer } from "@/components";
 import { formatDateStringToDateTime } from "@/utils/datetime";
 import { parseContent } from "@/utils/document";
 import { documentQueryOptions, documentVersionQueryOptions, documentVersionsQueryOptions } from "@/utils/queries";
 
 const routeApi = getRouteApi("/document/$id/$versionNumber");
-
-type Tag = {
-  id: string;
-  title: string;
-};
 
 export function DocumentRoute() {
   const { id, versionNumber } = routeApi.useParams();
@@ -31,7 +26,7 @@ export function DocumentRoute() {
     isSuccess: isSaved,
     mutate: save,
   } = useMutation({
-    mutationFn: (content: NodeJSON) => documentApi.updateVersion(id, versionNumber, content),
+    mutationFn: (content: NodeJSON) => API.documentVersions.update(id, versionNumber, content),
     onSuccess: (_, __, ___, ctx) => {
       ctx.client.invalidateQueries({ queryKey: ["documents", id] });
     },
@@ -76,11 +71,7 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
   const { data: document } = useQuery(documentQueryOptions(id));
   const { data: tags = [] } = useQuery({
     enabled: Boolean(document?.projectId),
-    queryFn: async (): Promise<Tag[]> => {
-      const response = await fetch(`/api/v1/projects/${document?.projectId}/tags`);
-      if (!response.ok) throw new Error("Failed to load tags");
-      return response.json() as Promise<Tag[]>;
-    },
+    queryFn: () => API.tags.listByProject(document?.projectId ?? ""),
     queryKey: ["tags", document?.projectId],
   });
   const tagOptions = tags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
@@ -123,7 +114,7 @@ function DocumentVersionsDrawer({
   const { data: versions = [] } = useQuery(documentVersionsQueryOptions(id));
 
   const { isPending: isCreatingVersion, mutate: createVersion } = useMutation({
-    mutationFn: (content: NodeJSON) => documentApi.createVersion(id, content),
+    mutationFn: (content: NodeJSON) => API.documentVersions.create(id, content),
     onSuccess: (_, __, ___, ctx) => {
       ctx.client.invalidateQueries({ queryKey: ["documentVersions", id] });
     },
