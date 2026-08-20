@@ -20,6 +20,7 @@ pub async fn search(
     let docs = sqlx::query_as::<_, DocumentSummary>(
         "SELECT DISTINCT
             d.id,
+            d.project_id,
             d.title,
             COALESCE(
                 (SELECT version_number FROM document_versions
@@ -51,6 +52,7 @@ pub async fn search_in_project(
     let docs = sqlx::query_as::<_, DocumentSummary>(
         "SELECT DISTINCT
             d.id,
+            d.project_id,
             d.title,
             COALESCE(
                 (SELECT version_number FROM document_versions
