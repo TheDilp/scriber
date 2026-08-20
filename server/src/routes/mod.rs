@@ -1,3 +1,4 @@
+pub mod document_aliases;
 pub mod document_tags;
 pub mod document_versions;
 pub mod documents;
@@ -36,6 +37,14 @@ pub fn api_router() -> Router<AppState> {
             get(document_tags::list).post(document_tags::create),
         )
         .route("/documents/{document_id}/tags/{tag_id}", delete(document_tags::delete))
+        .route(
+            "/documents/{document_id}/aliases",
+            get(document_aliases::list).post(document_aliases::create),
+        )
+        .route(
+            "/documents/{document_id}/aliases/{alias_id}",
+            delete(document_aliases::delete),
+        )
         .route("/projects", get(projects::list).post(projects::create))
         .route(
             "/projects/{id}",
