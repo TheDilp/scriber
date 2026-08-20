@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { API, type Project } from "@/api";
+import type { Project } from "@/types";
+
+import { API } from "@/api";
 import { Button, Input, Modal } from "@/components";
 
 function formatUpdated(dateString: string) {

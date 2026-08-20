@@ -1,11 +1,6 @@
-import { request } from "./request";
+import type { Project } from "@/types";
 
-export type Project = {
-  createdAt: string;
-  id: string;
-  title: string;
-  updatedAt: string;
-};
+import { request } from "./request";
 
 async function list(): Promise<Project[]> {
   return request<Project[]>("/api/v1/projects");

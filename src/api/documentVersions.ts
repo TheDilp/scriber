@@ -1,12 +1,6 @@
-import { request } from "./request";
+import type { DocumentVersion } from "@/types";
 
-export type DocumentVersion = {
-  content: string | undefined;
-  createdAt: string;
-  documentId: string;
-  id: string;
-  versionNumber: number;
-};
+import { request } from "./request";
 
 async function list(documentId: string): Promise<DocumentVersion[]> {
   return request<DocumentVersion[]>(`/api/v1/documents/${documentId}/versions`);

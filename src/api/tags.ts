@@ -1,12 +1,6 @@
-import { request } from "./request";
+import type { Tag } from "@/types";
 
-export type Tag = {
-  createdAt: string;
-  id: string;
-  projectId: string;
-  title: string;
-  updatedAt: string;
-};
+import { request } from "./request";
 
 async function listByProject(projectId: string): Promise<Tag[]> {
   return request<Tag[]>(`/api/v1/projects/${projectId}/tags`);
