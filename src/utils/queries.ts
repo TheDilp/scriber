@@ -16,6 +16,13 @@ export function documentAliasesQueryOptions(id: string) {
   });
 }
 
+export function documentTagsQueryOptions(id: string) {
+  return queryOptions({
+    queryFn: () => API.tags.listByDocument(id),
+    queryKey: ["documentTags", id],
+  });
+}
+
 export function documentVersionsQueryOptions(id: string) {
   return queryOptions({
     queryFn: () => API.documentVersions.list(id),

@@ -11,6 +11,7 @@ import { parseContent } from "@/utils/document";
 import {
   documentAliasesQueryOptions,
   documentQueryOptions,
+  documentTagsQueryOptions,
   documentVersionQueryOptions,
   documentVersionsQueryOptions,
 } from "@/utils/queries";
@@ -71,7 +72,6 @@ export function DocumentRoute() {
 
 function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null) => void }) {
   const { id } = routeApi.useParams();
-  const [selectedTags, setSelectedTags] = useState<AutocompleteOption[]>([]);
   const { data: document } = useQuery(documentQueryOptions(id));
   const { data: tags = [] } = useQuery({
     enabled: Boolean(document?.projectId),
@@ -81,6 +81,33 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
   const tagOptions = tags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
 
   const queryClient = useQueryClient();
+
+  const { data: documentTags = [] } = useQuery(documentTagsQueryOptions(id));
+  const selectedTags = documentTags.map(({ id: tagId, title }) => ({ id: tagId, label: title }));
+
+  function invalidateTags() {
+    return queryClient.invalidateQueries({ queryKey: ["documentTags", id] });
+  }
+  const { mutate: createTag } = useMutation({
+    mutationFn: (title: string) => API.tags.createForDocument(id, title),
+    onSuccess: invalidateTags,
+  });
+  const { mutate: removeTag } = useMutation({
+    mutationFn: (tagId: string) => API.tags.removeFromDocument(id, tagId),
+    onSuccess: invalidateTags,
+  });
+
+  function handleTagsChange(next: AutocompleteOption[]) {
+    const added = next.find((option) => !selectedTags.some(({ id: tagId }) => tagId === option.id));
+    if (added) {
+      createTag(added.label);
+      return;
+    }
+
+    const removed = selectedTags.find((option) => !next.some(({ id: tagId }) => tagId === option.id));
+    if (removed) removeTag(removed.id);
+  }
+
   const { data: documentAliases = [] } = useQuery(documentAliasesQueryOptions(id));
   const aliases = documentAliases.map(({ id: aliasId, title }) => ({ id: aliasId, label: title }));
 
@@ -115,9 +142,10 @@ function DocumentSettingsDrawer({ setIsDrawerOpen }: { setIsDrawerOpen: (v: null
       </div>
       <div className="flex flex-col gap-6">
         <Autocomplete
-          onChange={setSelectedTags}
+          allowCustomValues
+          onChange={handleTagsChange}
           options={tagOptions}
-          placeholder="Search tags"
+          placeholder="Search or type a tag and press Enter"
           title="Tags"
           value={selectedTags}
         />
